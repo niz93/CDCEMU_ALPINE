@@ -1,3 +1,5 @@
+#include <MBus.h>
+
 /***
 Example to the Mbus library.
 * This example uses the CD-Buttons of the headunit to do individual tasks
@@ -32,6 +34,8 @@ MBus mBus(mBusIn, mBusOut); //make an object of MBus to work with
 
 void setup()
 {
+  Serial.begin(9600);
+  Serial.write("hello world\n");
 	//default to cd 1 track 1
 	mBus.sendChangedCD(1,1);
 	mBus.sendCDStatus(1);
@@ -101,6 +105,7 @@ void loop()
 {
 	if(nextTime<millis()&&isOn)
 	{
+    Serial.write("hello world loop\n");
 		mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000)); 
 		nextTime=millis()+500;
 	}
@@ -200,7 +205,3 @@ void loop()
 		}
 	}
 }
-
-
-
-
