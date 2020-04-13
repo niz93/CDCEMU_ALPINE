@@ -46,7 +46,7 @@ void MBus::writeHexBitwise(uint8_t message) {
   for (int8_t i = 3; i > -1; i--) {
 		uint8_t output = ((message & (1 << i)) >> i);
 
-		if(output == 1) {
+		if (output == 1) {
 			sendOne();
 		} else {
 			sendZero();
@@ -70,7 +70,7 @@ void MBus::send(const uint64_t message) {
 	uint8_t printed = 0;
 	uint8_t parity = 0;
 	for(int8_t i = 16; i >= 0; i--) {
-    uint8_t output = ((message & ((uint64_t)0xF << i*4)) >> i*4);
+    uint8_t output = ((message & ((uint64_t)0xF << i * 4)) >> i * 4);
 	  parity = parity ^ output;
 		if (!output && !printed) {
 			// Do nothing.
@@ -83,44 +83,43 @@ void MBus::send(const uint64_t message) {
 	writeHexBitwise(parity);
 }
 
-boolean MBus::receive(uint64_t* message)
-{
+boolean MBus::receive(uint64_t* message) {
 	*message = 0;
 	if (digitalRead(pin_in_) == LOW) {
-		unsigned long time = micros();
+		unsigned long bit_start_time_us = micros();
 
-		boolean gelesen = false;
+		boolean is_bit_in_progress = false;
 		uint8_t counter = 0;
 
-		while ((micros()-time) < 4000) {
-			if (digitalRead(pin_in_) == HIGH && !gelesen) {
-				if ((micros() - time) < 1400 && (micros() - time) > 600) {
+		while ((micros() - bit_start_time_us) < 4000) {
+			if (digitalRead(pin_in_) == HIGH && !is_bit_in_progress) {
+				const uint16_t bit_delta_time_us = micros() - bit_start_time_us;
+				if (bit_delta_time_us < 1400 && bit_delta_time_us > 600) {
 					// 0 is in between 600 and 1700 microseconds.
 				  *message *= 2;
 				  ++counter;
-				  gelesen = true;
-				}
-				else if ((micros() - time) > 1400) {
+				  is_bit_in_progress = true;
+				} else if (bit_delta_time_us > 1400) {
 					// 1 is longer than 1700 microseconds.
 				  *message *= 2;
 				  *message += 1;
 				  ++counter;
-				  gelesen = true;
+				  is_bit_in_progress = true;
 				}
 			}
-			if (gelesen && digitalRead(pin_in_) == LOW) {
-				gelesen=false;
-				time=micros();
+			if (is_bit_in_progress && digitalRead(pin_in_) == LOW) {
+				is_bit_in_progress = false;
+				bit_start_time_us = micros();
 			}
 		}
 
-		if(counter % 4 || !checkParity(message) || counter == 0) {
+		if (counter % 4 || !checkParity(message) || counter == 0) {
 			// Message is not ok.
 			*message = 0;
 			return false;
 		} else {
 			// Ignore parity.
-			(*message)=(*message)>>4;
+			(*message) = (*message) >> 4;
 			return true;
 		}
 	}
@@ -129,35 +128,92 @@ boolean MBus::receive(uint64_t* message)
 	return false;
 }
 
-/*
- CD-changer emulation from here on.
-*/
-void MBus::sendPlayingTrack(uint8_t Track,uint16_t Time)
-{
-	uint64_t play=0x994000100000001ull;
-	play|=(uint64_t)(Track%10)<<(10*4);
-	play|=(uint64_t)(Track/10)<<(11*4);
+// -----------------------------------
+// CD-changer emulation from here on.
+// -----------------------------------
 
-	play|=(uint64_t)(Time%10)<<(4*4);
-	play|=(uint64_t)((Time%100)/10)<<(5*4);
-	play|=(uint64_t)((Time/60)%10)<<(6*4);
-	play|=(uint64_t)(((Time/60)%100)/10)<<(7*4);
+void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec) {
+	uint64_t play = 0x994000100000001ull;
+
+	play |= (uint64_t)(track_number % 10) << (10 * 4);
+	play |= (uint64_t)(track_number / 10) << (11 * 4);
+
+	play |= (uint64_t)(track_time_sec % 10) << (4 * 4);
+	play |= (uint64_t)((track_time_sec % 100) / 10) << (5 * 4);
+	play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
+	play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
 
 	send(play);
 }
 
-void MBus::sendChangedCD(uint8_t CD,uint8_t Track)
-{
-	uint64_t play=0x9B900000001ull;
-	play|=(uint64_t)CD<<(7*4);
-	play|=(uint64_t)(Track%10)<<(5*4);
-	play|=(uint64_t)(Track/10)<<(6*4);
+void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status) {
+	uint64_t changed_disc_message = 0x9B900000001ull;
+  // The 0x9Bg header means a disc changing operation. The value g=9 it means
+  // the changing is done.
+
+	changed_disc_message |= (uint64_t)disc_number << (7 * 4);
+
+	changed_disc_message |= (uint64_t)(track_number % 10) << (5 * 4);
+	changed_disc_message |= (uint64_t)(track_number / 10) << (6 * 4);
+
+  switch (changing_status) {
+    case kInProgress: {
+      changed_disc_message |= (uint64_t)4 << (8 * 4);
+    }
+    case kNoMagazine: {
+      changed_disc_message |= (uint64_t)4 << (8 * 4);
+      changed_disc_message |= (uint64_t)2 << (4 * 4);
+    }
+    case kNoDisc: {
+      changed_disc_message |= (uint64_t)4 << (8 * 4);
+      changed_disc_message |= (uint64_t)4 << (4 * 4);
+      break;
+    }
+    case kNoTrack: {
+      changed_disc_message |= (uint64_t)4 << (8 * 4);
+      changed_disc_message |= (uint64_t)1 << (4 * 4);
+      break;
+    }
+    case kDone: {
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+
+	send(changed_disc_message);
+}
+
+void MBus::sendDiscInfo(uint8_t disc_number) {
+	uint64_t play = 0x9C001999999Full;
+
+	play |= (uint64_t)disc_number << (9 * 4);
+
 	send(play);
 }
 
-void MBus::sendCDStatus(uint8_t CD)
-{
-	uint64_t play=0x9C001999999Full;
-	play|=(uint64_t)CD<<(9*4);
-	send(play);
+void MBus::sendChangerErrorCode(ChangerErrorCode code) {
+  uint64_t error_message = 0x9F00000ull;
+
+  switch (code) {
+    case kNormal: {
+      break;
+    }
+    case kHighTemperature: {
+      error_message |= (uint64_t)3 << (4 * 4);
+      break;
+    }
+    case kDiscChangeIssue: {
+      error_message |= (uint64_t)1 << (3 * 4);
+      break;
+    }
+    case kStuckDisc: {
+      error_message |= (uint64_t)2 << (3 * 4);
+    }
+    default: {
+      break;
+    }
+  }
+  send(error_message);
 }

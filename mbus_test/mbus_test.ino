@@ -37,8 +37,8 @@ void setup()
   Serial.begin(9600);
   Serial.write("hello world\n");
 	//default to cd 1 track 1
-	mBus.sendChangedCD(1,25);
-	mBus.sendCDStatus(1);
+	mBus.sendChangingDisc(1,1, MBus::ChangingStatus::kDone); 
+	//mBus.sendCDStatus(1);
 	mBus.sendPlayingTrack(1,0);
 }
 /***************************************************************
@@ -121,7 +121,7 @@ void loop()
 			ignoreNext=false;
 			if(wasCD)
 			{
-				mBus.sendCDStatus(currentCD);
+				mBus.sendDiscInfo(currentCD);
 				wasCD=false;
 			}
 		}
@@ -131,9 +131,9 @@ void loop()
 		}
 		else if(receivedMessage == 0x19)
 		{
-			mBus.sendChangedCD(currentCD,currentTrack); //'still at cd ...'
+			mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd ...'
 			delay(50);
-			mBus.sendCDStatus(currentCD);
+			mBus.sendDiscInfo(currentCD);
 			delay(50);
 			mBus.sendPlayingTrack(currentTrack,0);
 		}
@@ -145,12 +145,16 @@ void loop()
 		}
 		else if(receivedMessage==Play)
 		{
+      //  never executed?
 			mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000));    
+      mBus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
 		}
     else if(receivedMessage==Pause)
     {
       Serial.write("pause\n");
-      mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000 - 10));    
+      //mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000 - 10));    
+      //mBus.sendChangerErrorCode(MBus::ChangerErrorCode::kHighTemperature);
+      //mBus.sendChangingDisc(5, 23, MBus::ChangingStatus::kNoTrack);
     }
 		else if(receivedMessage == FastFwd)
 		{
@@ -170,9 +174,9 @@ void loop()
 			uint64_t test=(receivedMessage >>(4*4))-(uint64_t)0x1130; 
 			if(test>0)//not the same cd as before
 			{
-				mBus.sendChangedCD(test,1);//'did change'
+				mBus.sendChangingDisc(test, 1, MBus::ChangingStatus::kDone);//'did change'
 				delay(50);
-				mBus.sendCDStatus(currentCD);
+				mBus.sendDiscInfo(currentCD);
 				currentCD=test;
 				currentTrack=1;
 				wasCD=true;
@@ -189,9 +193,9 @@ void loop()
 				//currentTrack=(receivedMessage&((uint64_t)0xF<<(4*2)))>>(4*2);
 				currentTrack+=((receivedMessage&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
 				
-				mBus.sendChangedCD(currentCD,currentTrack); //'still at cd...'
+				mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd...'
 				delay(50);
-				mBus.sendCDStatus(currentCD);
+				mBus.sendDiscInfo(currentCD);
 				delay(50);
 				mBus.sendPlayingTrack(currentTrack,0);
 				if(timeout<millis())//debounce

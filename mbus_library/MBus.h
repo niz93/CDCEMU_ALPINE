@@ -38,9 +38,26 @@ class MBus {
 		MBus(uint8_t in, uint8_t out);
 		void send(const uint64_t message);
 		boolean receive(uint64_t* message);
-		void sendPlayingTrack(uint8_t Track,uint16_t Time);
-		void sendChangedCD(uint8_t CD,uint8_t Track);
-		void sendCDStatus(uint8_t CD);
+
+		enum ChangerErrorCode {
+			kNormal,
+			kHighTemperature,
+			kDiscChangeIssue,
+			kStuckDisc
+		};
+
+		enum ChangingStatus {
+			kInProgress,
+			kNoMagazine,
+			kNoDisc,
+			kNoTrack,
+			kDone
+		};
+
+		void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec);
+		void sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status);
+		void sendDiscInfo(uint8_t disc_number);
+		void sendChangerErrorCode(ChangerErrorCode code);
 
 	private:
 		void sendZero();
