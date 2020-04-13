@@ -2,6 +2,7 @@
 MBus.h - Library to emulate Alpine M-Bus commands
 
 Copyright 2012 Oliver Mueller
+Copyright 2020 Marcin Dymczyk
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,156 +16,133 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ***/
+
 #include "MBus.h"
 
+MBus::MBus(uint8_t pin_in, uint8_t pin_out) : pin_in_(pin_in),
+                                              pin_out_(pin_out) {
+	pin_in_ = pin_in;
+	pin_out_ = pin_out;
 
-MBus::MBus(uint8_t in, uint8_t out)
-{
-	_in=in;
-	_out=out;
-	
-	pinMode(_in, INPUT);
-	pinMode(_out,OUTPUT);
+	pinMode(pin_in_, INPUT);
+	pinMode(pin_out_,OUTPUT);
 }
 
-void MBus::sendZero()
-{
-	digitalWrite(_out, HIGH);
+void MBus::sendZero() {
+	digitalWrite(pin_out_, HIGH);
 	delayMicroseconds(600);
-	digitalWrite(_out, LOW);
+	digitalWrite(pin_out_, LOW);
 	delayMicroseconds(2400);
 }
 
-void MBus::sendOne()
-{
-	digitalWrite(_out, HIGH);
+void MBus::sendOne() {
+	digitalWrite(pin_out_, HIGH);
 	delayMicroseconds(1800);
-	digitalWrite(_out, LOW);
+	digitalWrite(pin_out_, LOW);
 	delayMicroseconds(1200);
 }
 
-void MBus::writeHexBitWise(uint8_t message)
-{
-		for(int8_t i=3; i>-1; i--)
-	{
-		uint8_t output=((message & (1<<i) )>>i);
-		if(output==1)
-		{
+void MBus::writeHexBitwise(uint8_t message) {
+  for (int8_t i = 3; i > -1; i--) {
+		uint8_t output = ((message & (1 << i)) >> i);
+
+		if(output == 1) {
 			sendOne();
-		}
-		else
-		{
+		} else {
 			sendZero();
 		}
-	}
+  }
 }
 
-boolean MBus::checkParity(uint64_t *message)
-{
-	uint8_t parity=0;
-	uint8_t test=0;
-	for(uint8_t i=16; i>0; i--)
-	{
-		test=((*message & ((uint64_t)0xF<<i*4) )>>i*4);
-		parity=parity^test;
+boolean MBus::checkParity(uint64_t* message) {
+	uint8_t parity = 0;
+	uint8_t test = 0;
+	for(uint8_t i = 16; i > 0; i--) {
+		test = ((*message & ((uint64_t)0xF << i*4)) >> i*4);
+		parity = parity^test;
 	}
-	parity+=1;
-	
-	if(parity==(*message & ((uint64_t)0xF)))
-		return true;
-	else
-	{
-		return false;
-	}
+	++parity;
+
+	return parity == (*message & ((uint64_t)0xF));
 }
 
-void MBus::send(uint64_t message)
-{
-	uint8_t printed=0;
-	uint8_t parity=0;
-	for(int8_t i=16; i>=0; i--)
-	{
-		uint8_t output=((message & ((uint64_t)0xF<<i*4) )>>i*4);
-	parity=parity^output;
-		if(!output&&!printed)
-		{
-			//do nothing
-		}
-		else
-		{
-			writeHexBitWise(output);
-			printed++;
+void MBus::send(const uint64_t message) {
+	uint8_t printed = 0;
+	uint8_t parity = 0;
+	for(int8_t i = 16; i >= 0; i--) {
+    uint8_t output = ((message & ((uint64_t)0xF << i*4)) >> i*4);
+	  parity = parity ^ output;
+		if (!output && !printed) {
+			// Do nothing.
+		} else {
+			writeHexBitwise(output);
+			++printed;
 		}
 	}
-	parity+=1;
-	writeHexBitWise(parity);
+	++parity;
+	writeHexBitwise(parity);
 }
 
-boolean MBus::receive(uint64_t *message)
+boolean MBus::receive(uint64_t* message)
 {
-	*message=0;
-	if(digitalRead(_in)==LOW)
-	{
-		unsigned long time=micros();
+	*message = 0;
+	if (digitalRead(pin_in_) == LOW) {
+		unsigned long time = micros();
 
-		boolean gelesen=false; 
-		uint8_t counter=0;
+		boolean gelesen = false;
+		uint8_t counter = 0;
 
-		while((micros()-time)<4000)
-		{
-			if(digitalRead(_in)==HIGH&&!gelesen)
-			{
-				if((micros()-time)<1400&&(micros()-time)>600)//0 is in between 600 and 1700 microseconds
-				{
-				  *message*=2;
-				  counter++;
-				  gelesen=true; 
+		while ((micros()-time) < 4000) {
+			if (digitalRead(pin_in_) == HIGH && !gelesen) {
+				if ((micros() - time) < 1400 && (micros() - time) > 600) {
+					// 0 is in between 600 and 1700 microseconds.
+				  *message *= 2;
+				  ++counter;
+				  gelesen = true;
 				}
-				else if((micros()-time)>1400)//1 is longer then 1700 microseconds
-				{
-				  *message*=2;
-				  *message+=1;
-				  counter++;
-				  gelesen=true;
-				  
+				else if ((micros() - time) > 1400) {
+					// 1 is longer than 1700 microseconds.
+				  *message *= 2;
+				  *message += 1;
+				  ++counter;
+				  gelesen = true;
 				}
 			}
-			if(gelesen&&digitalRead(_in)==LOW)  
-			{
+			if (gelesen && digitalRead(pin_in_) == LOW) {
 				gelesen=false;
 				time=micros();
-			}  
+			}
 		}
-		if(counter%4||!checkParity(message)||counter==0)
-		{
-			//message is not ok
-			*message=0;
-					return false;
-		}
-		else
-		{
-			(*message)=(*message)>>4;//ingnore parity
-					return true;
+
+		if(counter % 4 || !checkParity(message) || counter == 0) {
+			// Message is not ok.
+			*message = 0;
+			return false;
+		} else {
+			// Ignore parity.
+			(*message)=(*message)>>4;
+			return true;
 		}
 	}
-	return false;
 
+	// The input pin is not low so no message could be read.
+	return false;
 }
 
 /*
- CD-changer emulation from here on
+ CD-changer emulation from here on.
 */
 void MBus::sendPlayingTrack(uint8_t Track,uint16_t Time)
 {
 	uint64_t play=0x994000100000001ull;
 	play|=(uint64_t)(Track%10)<<(10*4);
 	play|=(uint64_t)(Track/10)<<(11*4);
-	
+
 	play|=(uint64_t)(Time%10)<<(4*4);
 	play|=(uint64_t)((Time%100)/10)<<(5*4);
 	play|=(uint64_t)((Time/60)%10)<<(6*4);
 	play|=(uint64_t)(((Time/60)%100)/10)<<(7*4);
-	
+
 	send(play);
 }
 

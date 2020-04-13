@@ -37,7 +37,7 @@ void setup()
   Serial.begin(9600);
   Serial.write("hello world\n");
 	//default to cd 1 track 1
-	mBus.sendChangedCD(1,1);
+	mBus.sendChangedCD(1,25);
 	mBus.sendCDStatus(1);
 	mBus.sendPlayingTrack(1,0);
 }
@@ -111,6 +111,11 @@ void loop()
 	}
 	if(mBus.receive(&receivedMessage))
 	{
+    unsigned long long1 = (unsigned long)((receivedMessage & 0xFFFF0000) >> 16 );
+    unsigned long long2 = (unsigned long)((receivedMessage & 0x0000FFFF));
+    String hex = String(long1, HEX) + String(long2, HEX) + "\n"; // six octets
+    Serial.print(hex);
+     
 		if(ignoreNext)
 		{
 			ignoreNext=false;
@@ -120,8 +125,6 @@ void loop()
 				wasCD=false;
 			}
 		}
-		
-	
 		else if(receivedMessage == Ping)
 		{
 			mBus.send(PingOK);//acknowledge Ping
@@ -134,7 +137,7 @@ void loop()
 			delay(50);
 			mBus.sendPlayingTrack(currentTrack,0);
 		}
-		else if(receivedMessage==OFF&&isOn)
+		else if(receivedMessage==Off && isOn)
 		{
 			/*do something before shutdown*/
 			mBus.send(Wait);//acknowledge
@@ -144,15 +147,23 @@ void loop()
 		{
 			mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000));    
 		}
-		else if(receivedMessage==0x11104)
+    else if(receivedMessage==Pause)
+    {
+      Serial.write("pause\n");
+      mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000 - 10));    
+    }
+		else if(receivedMessage == FastFwd)
 		{
+      Serial.write("ffwd\n");
 			mBus.send(Wait);//acknowledge
-			/* do somethinmg on ffwd button*/     
+			/* do something on ffwd button*/  
+      ++currentTrack;   
 		}
-		else if(receivedMessage==0x11108)
+		else if(receivedMessage == FastBwd)
 		{
+      Serial.write("fbwd\n");
 			mBus.send(Wait);//acknowledge
-			/* do somethinmg on fbwd button*/        
+			/* do something on fbwd button*/        
 		}
 		else if(receivedMessage>>(4*5)==0x113)//'please change cd'
 		{
@@ -175,7 +186,7 @@ void loop()
 			else//same cd, maybe different track
 			{
 				uint8_t lastTrack=currentTrack;
-				currentTrack=(receivedMessage&((uint64_t)0xF<<(4*2)))>>(4*2);
+				//currentTrack=(receivedMessage&((uint64_t)0xF<<(4*2)))>>(4*2);
 				currentTrack+=((receivedMessage&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
 				
 				mBus.sendChangedCD(currentCD,currentTrack); //'still at cd...'
