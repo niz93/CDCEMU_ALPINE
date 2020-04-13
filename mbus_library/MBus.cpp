@@ -21,111 +21,111 @@ limitations under the License.
 
 MBus::MBus(uint8_t pin_in, uint8_t pin_out) : pin_in_(pin_in),
                                               pin_out_(pin_out) {
-	pin_in_ = pin_in;
-	pin_out_ = pin_out;
+  pin_in_ = pin_in;
+  pin_out_ = pin_out;
 
-	pinMode(pin_in_, INPUT);
-	pinMode(pin_out_,OUTPUT);
+  pinMode(pin_in_, INPUT);
+  pinMode(pin_out_,OUTPUT);
 }
 
 void MBus::sendZero() {
-	digitalWrite(pin_out_, HIGH);
-	delayMicroseconds(600);
-	digitalWrite(pin_out_, LOW);
-	delayMicroseconds(2400);
+  digitalWrite(pin_out_, HIGH);
+  delayMicroseconds(600);
+  digitalWrite(pin_out_, LOW);
+  delayMicroseconds(2400);
 }
 
 void MBus::sendOne() {
-	digitalWrite(pin_out_, HIGH);
-	delayMicroseconds(1800);
-	digitalWrite(pin_out_, LOW);
-	delayMicroseconds(1200);
+  digitalWrite(pin_out_, HIGH);
+  delayMicroseconds(1800);
+  digitalWrite(pin_out_, LOW);
+  delayMicroseconds(1200);
 }
 
 void MBus::writeHexBitwise(uint8_t message) {
   for (int8_t i = 3; i > -1; i--) {
-		uint8_t output = ((message & (1 << i)) >> i);
+    uint8_t output = ((message & (1 << i)) >> i);
 
-		if (output == 1) {
-			sendOne();
-		} else {
-			sendZero();
-		}
+    if (output == 1) {
+      sendOne();
+    } else {
+      sendZero();
+    }
   }
 }
 
 boolean MBus::checkParity(uint64_t* message) {
-	uint8_t parity = 0;
-	uint8_t test = 0;
-	for(uint8_t i = 16; i > 0; i--) {
-		test = ((*message & ((uint64_t)0xF << i*4)) >> i*4);
-		parity = parity^test;
-	}
-	++parity;
+  uint8_t parity = 0;
+  uint8_t test = 0;
+  for(uint8_t i = 16; i > 0; i--) {
+    test = ((*message & ((uint64_t)0xF << i*4)) >> i*4);
+    parity = parity^test;
+  }
+  ++parity;
 
-	return parity == (*message & ((uint64_t)0xF));
+  return parity == (*message & ((uint64_t)0xF));
 }
 
 void MBus::send(const uint64_t message) {
-	uint8_t printed = 0;
-	uint8_t parity = 0;
-	for(int8_t i = 16; i >= 0; i--) {
+  uint8_t printed = 0;
+  uint8_t parity = 0;
+  for(int8_t i = 16; i >= 0; i--) {
     uint8_t output = ((message & ((uint64_t)0xF << i * 4)) >> i * 4);
-	  parity = parity ^ output;
-		if (!output && !printed) {
-			// Do nothing.
-		} else {
-			writeHexBitwise(output);
-			++printed;
-		}
-	}
-	++parity;
-	writeHexBitwise(parity);
+    parity = parity ^ output;
+    if (!output && !printed) {
+      // Do nothing.
+    } else {
+      writeHexBitwise(output);
+      ++printed;
+    }
+  }
+  ++parity;
+  writeHexBitwise(parity);
 }
 
 boolean MBus::receive(uint64_t* message) {
-	*message = 0;
-	if (digitalRead(pin_in_) == LOW) {
-		unsigned long bit_start_time_us = micros();
+  *message = 0;
+  if (digitalRead(pin_in_) == LOW) {
+    unsigned long bit_start_time_us = micros();
 
-		boolean is_bit_in_progress = false;
-		uint8_t counter = 0;
+    boolean is_bit_in_progress = false;
+    uint8_t counter = 0;
 
-		while ((micros() - bit_start_time_us) < 4000) {
-			if (digitalRead(pin_in_) == HIGH && !is_bit_in_progress) {
-				const uint16_t bit_delta_time_us = micros() - bit_start_time_us;
-				if (bit_delta_time_us < 1400 && bit_delta_time_us > 600) {
-					// 0 is in between 600 and 1700 microseconds.
-				  *message *= 2;
-				  ++counter;
-				  is_bit_in_progress = true;
-				} else if (bit_delta_time_us > 1400) {
-					// 1 is longer than 1700 microseconds.
-				  *message *= 2;
-				  *message += 1;
-				  ++counter;
-				  is_bit_in_progress = true;
-				}
-			}
-			if (is_bit_in_progress && digitalRead(pin_in_) == LOW) {
-				is_bit_in_progress = false;
-				bit_start_time_us = micros();
-			}
-		}
+    while ((micros() - bit_start_time_us) < 4000) {
+      if (digitalRead(pin_in_) == HIGH && !is_bit_in_progress) {
+        const uint16_t bit_delta_time_us = micros() - bit_start_time_us;
+        if (bit_delta_time_us < 1400 && bit_delta_time_us > 600) {
+          // 0 is in between 600 and 1700 microseconds.
+          *message *= 2;
+          ++counter;
+          is_bit_in_progress = true;
+        } else if (bit_delta_time_us > 1400) {
+          // 1 is longer than 1700 microseconds.
+          *message *= 2;
+          *message += 1;
+          ++counter;
+          is_bit_in_progress = true;
+        }
+      }
+      if (is_bit_in_progress && digitalRead(pin_in_) == LOW) {
+        is_bit_in_progress = false;
+        bit_start_time_us = micros();
+      }
+    }
 
-		if (counter % 4 || !checkParity(message) || counter == 0) {
-			// Message is not ok.
-			*message = 0;
-			return false;
-		} else {
-			// Ignore parity.
-			(*message) = (*message) >> 4;
-			return true;
-		}
-	}
+    if (counter % 4 || !checkParity(message) || counter == 0) {
+      // Message is not ok.
+      *message = 0;
+      return false;
+    } else {
+      // Ignore parity.
+      (*message) = (*message) >> 4;
+      return true;
+    }
+  }
 
-	// The input pin is not low so no message could be read.
-	return false;
+  // The input pin is not low so no message could be read.
+  return false;
 }
 
 // -----------------------------------
@@ -133,28 +133,28 @@ boolean MBus::receive(uint64_t* message) {
 // -----------------------------------
 
 void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec) {
-	uint64_t play = 0x994000100000001ull;
+  uint64_t play = 0x994000100000001ull;
 
-	play |= (uint64_t)(track_number % 10) << (10 * 4);
-	play |= (uint64_t)(track_number / 10) << (11 * 4);
+  play |= (uint64_t)(track_number % 10) << (10 * 4);
+  play |= (uint64_t)(track_number / 10) << (11 * 4);
 
-	play |= (uint64_t)(track_time_sec % 10) << (4 * 4);
-	play |= (uint64_t)((track_time_sec % 100) / 10) << (5 * 4);
-	play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
-	play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
+  play |= (uint64_t)(track_time_sec % 10) << (4 * 4);
+  play |= (uint64_t)((track_time_sec % 100) / 10) << (5 * 4);
+  play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
+  play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
 
-	send(play);
+  send(play);
 }
 
 void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status) {
-	uint64_t changed_disc_message = 0x9B900000001ull;
+  uint64_t changed_disc_message = 0x9B900000001ull;
   // The 0x9Bg header means a disc changing operation. The value g=9 it means
   // the changing is done.
 
-	changed_disc_message |= (uint64_t)disc_number << (7 * 4);
+  changed_disc_message |= (uint64_t)disc_number << (7 * 4);
 
-	changed_disc_message |= (uint64_t)(track_number % 10) << (5 * 4);
-	changed_disc_message |= (uint64_t)(track_number / 10) << (6 * 4);
+  changed_disc_message |= (uint64_t)(track_number % 10) << (5 * 4);
+  changed_disc_message |= (uint64_t)(track_number / 10) << (6 * 4);
 
   switch (changing_status) {
     case kInProgress: {
@@ -182,15 +182,15 @@ void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingS
     }
   }
 
-	send(changed_disc_message);
+  send(changed_disc_message);
 }
 
 void MBus::sendDiscInfo(uint8_t disc_number) {
-	uint64_t play = 0x9C001999999Full;
+  uint64_t play = 0x9C001999999Full;
 
-	play |= (uint64_t)disc_number << (9 * 4);
+  play |= (uint64_t)disc_number << (9 * 4);
 
-	send(play);
+  send(play);
 }
 
 void MBus::sendChangerErrorCode(ChangerErrorCode code) {

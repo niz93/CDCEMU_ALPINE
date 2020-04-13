@@ -23,50 +23,50 @@ limitations under the License.
 
 #define Shutdown 11142
 #define Ping 0x18
-#define	Play 0x11101
-#define	Pause 0x11102
-#define	Stop 0x11140
-#define	FastFwd 0x11104
-#define	FastBwd 0x11108
+#define Play 0x11101
+#define Pause 0x11102
+#define Stop 0x11140
+#define FastFwd 0x11104
+#define FastBwd 0x11108
 #define PingOK 0x98
 #define Wait 0x9F00000
 #define Off 0x11142
 #define Changing 0x9B910100001
 
 class MBus {
-	public:
-		MBus(uint8_t in, uint8_t out);
-		void send(const uint64_t message);
-		boolean receive(uint64_t* message);
+  public:
+    MBus(uint8_t in, uint8_t out);
+    void send(const uint64_t message);
+    boolean receive(uint64_t* message);
 
-		enum ChangerErrorCode {
-			kNormal,
-			kHighTemperature,
-			kDiscChangeIssue,
-			kStuckDisc
-		};
+    enum ChangerErrorCode {
+      kNormal,
+      kHighTemperature,
+      kDiscChangeIssue,
+      kStuckDisc
+    };
 
-		enum ChangingStatus {
-			kInProgress,
-			kNoMagazine,
-			kNoDisc,
-			kNoTrack,
-			kDone
-		};
+    enum ChangingStatus {
+      kInProgress,
+      kNoMagazine,
+      kNoDisc,
+      kNoTrack,
+      kDone
+    };
 
-		void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec);
-		void sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status);
-		void sendDiscInfo(uint8_t disc_number);
-		void sendChangerErrorCode(ChangerErrorCode code);
+    void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec);
+    void sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status);
+    void sendDiscInfo(uint8_t disc_number);
+    void sendChangerErrorCode(ChangerErrorCode code);
 
-	private:
-		void sendZero();
-		void sendOne();
-		void writeHexBitwise(uint8_t message);
-		boolean checkParity(uint64_t* message);
+  private:
+    void sendZero();
+    void sendOne();
+    void writeHexBitwise(uint8_t message);
+    boolean checkParity(uint64_t* message);
 
-		uint8_t pin_in_;
-		uint8_t pin_out_;
+    uint8_t pin_in_;
+    uint8_t pin_out_;
 };
 
 #endif
