@@ -1,39 +1,28 @@
-#include <MBus.h>
+// Copyright 2012 Oliver Mueller
+// Copyright 2020 Marcin Dymczyk
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-/***
-Example to the Mbus library.
-* This example uses the CD-Buttons of the headunit to do individual tasks
-* as well as the ffwd, the fbwd and the skip buttons.
-* 
+#include <mbus.h>
 
+// Pick input and output PINs. On Atmega8, it's gonna be PB2 and PB4.
+#define MBUS_IN_PIN 10 // Input port.
+#define MBUS_OUT_PIN 12 // Output port.
 
-Copyright 2012 Oliver Mueller
+// Construct an MBus objects this example will work with.
+MBus mBus(MBUS_IN_PIN, MBUS_OUT_PIN);
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-***/
-
-/*******************************************************************
-initialisation
-*******************************************************************/
-#include <MBus.h>
-
-#define mBusIn 10 //input port
-#define mBusOut 12 //output port
-
-MBus mBus(mBusIn, mBusOut); //make an object of MBus to work with 
-
-void setup()
-{
+void setup() {
   Serial.begin(9600);
   Serial.write("hello world\n");
 	//default to cd 1 track 1

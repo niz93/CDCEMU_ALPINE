@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***/
 
-#include "MBus.h"
+#include "mbus.h"
 
 MBus::MBus(uint8_t pin_in, uint8_t pin_out) : pin_in_(pin_in),
                                               pin_out_(pin_out) {
