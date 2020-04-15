@@ -11,6 +11,14 @@ The changes include:
 
 Overall, the library fits on an Atmega8 with a MiniCore package (https://github.com/MCUdude/MiniCore) and was tested with an Alpine 7618R headunit.
 
+### Other M-Bus references
+* https://github.com/4nykey/rockbox/blob/master/apps/plugins/alpine_cdc.c
+* http://web.archive.org/web/20100308084922/http://kiora.ath.cx/alpine/
+* https://github.com/picohari/atmega128_alpine-mbus-emulator
+* https://github.com/kjanesch/pseudochanger (Panasonic version)
+* https://www.avrfreaks.net/projects/alpine-m-bus-communication-audio-input-activation
+
+
 ### Original readme of Oliver Mueller
 
 This is an Arduino library to emulate Alpines M-Bus which is used on a variety of car radios.

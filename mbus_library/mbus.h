@@ -2,6 +2,7 @@
 MBus.cpp - Library to emulate Alpine M-Bus commands
 
 Copyright 2012 Oliver Mueller
+Copyright 2020 Marcin Dymczyk
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -55,8 +56,10 @@ class MBus {
     };
 
     void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec);
-    void sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status);
-    void sendDiscInfo(uint8_t disc_number);
+    void sendChangingDisc(uint8_t disc_number, uint8_t track_number,
+                          ChangingStatus changing_status);
+    void sendDiscInfo(uint8_t disc_number, uint8_t total_tracks,
+                      uint16_t total_time_sec);
     void sendChangerErrorCode(ChangerErrorCode code);
 
   private:

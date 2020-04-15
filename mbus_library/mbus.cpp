@@ -19,6 +19,13 @@ limitations under the License.
 
 #include "mbus.h"
 
+void printMessage(uint64_t msg) {
+  unsigned long long1 = (unsigned long)((msg & 0xFFFF0000) >> 16 );
+  unsigned long long2 = (unsigned long)((msg & 0x0000FFFF));
+  String hex = String(long1, HEX) + String(long2, HEX) + "\n"; // six octets
+  Serial.print(hex);
+}
+
 MBus::MBus(uint8_t pin_in, uint8_t pin_out) : pin_in_(pin_in),
                                               pin_out_(pin_out) {
   pin_in_ = pin_in;
@@ -146,8 +153,9 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec) {
   send(play);
 }
 
-void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingStatus changing_status) {
-  uint64_t changed_disc_message = 0x9B900000001ull;
+void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number,
+                            ChangingStatus changing_status) {
+  uint64_t changed_disc_message = 0x9B000000001ull;
   // The 0x9Bg header means a disc changing operation. The value g=9 it means
   // the changing is done.
 
@@ -174,23 +182,31 @@ void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number, ChangingS
       changed_disc_message |= (uint64_t)1 << (4 * 4);
       break;
     }
-    case kDone: {
-      break;
-    }
+    case kDone:
     default: {
+      changed_disc_message |= (uint64_t)9 << (8 * 4);
       break;
     }
   }
-
   send(changed_disc_message);
 }
 
-void MBus::sendDiscInfo(uint8_t disc_number) {
-  uint64_t play = 0x9C001999999Full;
+void MBus::sendDiscInfo(uint8_t disc_number, uint8_t total_tracks,
+                        uint16_t total_time_sec) {
+  uint64_t disc_info_message = 0x9C001000000Full;
 
-  play |= (uint64_t)disc_number << (9 * 4);
+  disc_info_message |= ((uint64_t)disc_number << (9 * 4));
 
-  send(play);
+  disc_info_message |= ((uint64_t)(total_tracks / 10) << (6 * 4));
+  disc_info_message |= ((uint64_t)(total_tracks % 10) << (5 * 4));
+
+  disc_info_message |= (uint64_t)(total_time_sec % 10) << (4 * 4);
+  disc_info_message |= (uint64_t)((total_time_sec % 100) / 10) << (3 * 4);
+  disc_info_message |= (uint64_t)((total_time_sec / 60) % 10) << (2 * 4);
+  disc_info_message |=
+    (uint64_t)(((total_time_sec / 60) % 100) / 10) << (1 * 4);
+
+  send(disc_info_message);
 }
 
 void MBus::sendChangerErrorCode(ChangerErrorCode code) {

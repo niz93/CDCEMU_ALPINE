@@ -19,15 +19,16 @@
 #define MBUS_IN_PIN 10 // Input port.
 #define MBUS_OUT_PIN 12 // Output port.
 
+#define NUM_TRACKS 19
+
 // Construct an MBus objects this example will work with.
 MBus mBus(MBUS_IN_PIN, MBUS_OUT_PIN);
 
 void setup() {
   Serial.begin(9600);
-  Serial.write("hello world\n");
 	//default to cd 1 track 1
 	mBus.sendChangingDisc(1,1, MBus::ChangingStatus::kDone); 
-	//mBus.sendCDStatus(1);
+  mBus.sendDiscInfo(1, NUM_TRACKS, 500);
 	mBus.sendPlayingTrack(1,0);
 }
 /***************************************************************
@@ -94,7 +95,7 @@ void loop()
 {
 	if(nextTime<millis()&&isOn)
 	{
-    Serial.write("hello world loop\n");
+    Serial.write("loop\n");
 		mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000)); 
 		nextTime=millis()+500;
 	}
@@ -110,7 +111,7 @@ void loop()
 			ignoreNext=false;
 			if(wasCD)
 			{
-				mBus.sendDiscInfo(currentCD);
+				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
 				wasCD=false;
 			}
 		}
@@ -122,7 +123,7 @@ void loop()
 		{
 			mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd ...'
 			delay(50);
-			mBus.sendDiscInfo(currentCD);
+			mBus.sendDiscInfo(1, NUM_TRACKS, 500);
 			delay(50);
 			mBus.sendPlayingTrack(currentTrack,0);
 		}
@@ -145,19 +146,19 @@ void loop()
       //mBus.sendChangerErrorCode(MBus::ChangerErrorCode::kHighTemperature);
       //mBus.sendChangingDisc(5, 23, MBus::ChangingStatus::kNoTrack);
     }
-		else if(receivedMessage == FastFwd)
-		{
-      Serial.write("ffwd\n");
-			mBus.send(Wait);//acknowledge
-			/* do something on ffwd button*/  
-      ++currentTrack;   
-		}
-		else if(receivedMessage == FastBwd)
-		{
-      Serial.write("fbwd\n");
-			mBus.send(Wait);//acknowledge
-			/* do something on fbwd button*/        
-		}
+//		else if(receivedMessage == FastFwd)
+//		{
+//      Serial.write("ffwd\n");
+//			mBus.send(Wait);//acknowledge
+//			/* do something on ffwd button*/  
+//      ++currentTrack;   
+//		}
+//		else if(receivedMessage == FastBwd)
+//		{
+//      Serial.write("fbwd\n");
+//			mBus.send(Wait);//acknowledge
+//			/* do something on fbwd button*/        
+//		}
 		else if(receivedMessage>>(4*5)==0x113)//'please change cd'
 		{
 			uint64_t test=(receivedMessage >>(4*4))-(uint64_t)0x1130; 
@@ -165,7 +166,7 @@ void loop()
 			{
 				mBus.sendChangingDisc(test, 1, MBus::ChangingStatus::kDone);//'did change'
 				delay(50);
-				mBus.sendDiscInfo(currentCD);
+				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
 				currentCD=test;
 				currentTrack=1;
 				wasCD=true;
@@ -184,7 +185,7 @@ void loop()
 				
 				mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd...'
 				delay(50);
-				mBus.sendDiscInfo(currentCD);
+				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
 				delay(50);
 				mBus.sendPlayingTrack(currentTrack,0);
 				if(timeout<millis())//debounce
