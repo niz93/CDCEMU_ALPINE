@@ -19,194 +19,152 @@
 #define MBUS_IN_PIN 10 // Input port.
 #define MBUS_OUT_PIN 12 // Output port.
 
+#define UPDATE_CYCLE_MS 500
+
 #define NUM_TRACKS 19
+#define DISC_TOTAL_TIME 500
 
 // Construct an MBus objects this example will work with.
-MBus mBus(MBUS_IN_PIN, MBUS_OUT_PIN);
+MBus mbus(MBUS_IN_PIN, MBUS_OUT_PIN);
+
+uint64_t received_message = 0;
+uint8_t current_cd = 1;
+uint8_t current_track = 1;
+uint64_t current_track_time = 0;
+
+uint64_t last_update_time_ms = 0;
+boolean is_on = true;
+
+MBus::PlayState play_state = MBus::PlayState::kPlaying;
+
+//boolean    ignoreNext=false;
+//boolean   wasCD=false;
+
+
+//uint64_t  lastMessage=0;
+
+//uint64_t  timeout=0;
+//boolean   isOn=true;
+
 
 void setup() {
   Serial.begin(9600);
-	//default to cd 1 track 1
-	mBus.sendChangingDisc(1,1, MBus::ChangingStatus::kDone); 
-  mBus.sendDiscInfo(1, NUM_TRACKS, 500);
-	mBus.sendPlayingTrack(1,0);
+
+  //mbus.sendInit();
+  //mbus.sendAvailableDiscs();
+
+  // Start playing the disc according to the defaults.
+  mbus.sendChangingDisc(current_cd, current_track, 
+                        MBus::ChangingStatus::kDone); 
+  mbus.sendDiscInfo(current_cd, NUM_TRACKS, DISC_TOTAL_TIME);
+  mbus.sendPlayingTrack(current_track, current_track_time, play_state);
 }
+
+
 /***************************************************************
 loop
 ****************************************************************/
-void interpretDisc(int disc) //set your function per cd-button here
-{
-	switch(disc)
-	{
-	case 1:
-		/*do something*/
-		break;
-	case 2:
-		/*do something*/
-		break;
-	case 3:
-		/*do something*/
-		break;
-	case 4:
-		/*do something*/    
-		break;
-	case 5:
-		/*do something*/
-		break;
-	case 6:
-		/*do something*/
-		break;
-	default:
-		break; 
-	}
-}
-
-
-void fwOrBw(uint8_t oldTrack, uint8_t newTrack) // to interpret track changes as consecutive forward/backward skips
-{
-	uint8_t i=0;
-	if(oldTrack<newTrack)
-	{
-		for(i=oldTrack;i<newTrack;i++)
-		{
-			/*skip forward*/
-		}
-	}
-	else
-	{
-		for(i=newTrack;i<oldTrack;i++)
-		{
-			/*skip backwards*/
-		}
-	}
-}
-
-boolean		ignoreNext=false;
-boolean		wasCD=false;
-uint8_t		currentCD=1;
-uint8_t		currentTrack=1;
-uint64_t	receivedMessage=0;
-uint64_t	lastMessage=0;
-uint64_t	nextTime=0;
-uint64_t	timeout=0;
-boolean		isOn=true;
-
-void loop()
-{
-	if(nextTime<millis()&&isOn)
-	{
-    Serial.write("loop\n");
-		mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000)); 
-		nextTime=millis()+500;
-	}
-	if(mBus.receive(&receivedMessage))
-	{
-    unsigned long long1 = (unsigned long)((receivedMessage & 0xFFFF0000) >> 16 );
-    unsigned long long2 = (unsigned long)((receivedMessage & 0x0000FFFF));
-    String hex = String(long1, HEX) + String(long2, HEX) + "\n"; // six octets
-    Serial.print(hex);
-     
-		if(ignoreNext)
-		{
-			ignoreNext=false;
-			if(wasCD)
-			{
-				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
-				wasCD=false;
-			}
-		}
-		else if(receivedMessage == Ping)
-		{
-			mBus.send(PingOK);//acknowledge Ping
-		}
-		else if(receivedMessage == 0x19)
-		{
-			mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd ...'
-			delay(50);
-			mBus.sendDiscInfo(1, NUM_TRACKS, 500);
-			delay(50);
-			mBus.sendPlayingTrack(currentTrack,0);
-		}
-		else if(receivedMessage==Off && isOn)
-		{
-			/*do something before shutdown*/
-			mBus.send(Wait);//acknowledge
-			isOn=false;
-		}
-		else if(receivedMessage==Play)
-		{
-      //  never executed?
-			mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000));    
-      mBus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
-		}
-    else if(receivedMessage==Pause)
-    {
-      Serial.write("pause\n");
-      //mBus.sendPlayingTrack(currentTrack,(uint16_t)(millis()/1000 - 10));    
-      //mBus.sendChangerErrorCode(MBus::ChangerErrorCode::kHighTemperature);
-      //mBus.sendChangingDisc(5, 23, MBus::ChangingStatus::kNoTrack);
+void loop() {
+  uint64_t current_time_ms = millis();
+	if (millis() > last_update_time_ms + UPDATE_CYCLE_MS && is_on) {
+    if (play_state == MBus::PlayState::kPlaying) {
+      current_track_time += current_time_ms - last_update_time_ms;
     }
-//		else if(receivedMessage == FastFwd)
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
+		last_update_time_ms = millis();
+	}
+
+	if (mbus.receive(&received_message)) {
+    // printMessage(received_message);
+     
+//		if(ignoreNext)
 //		{
-//      Serial.write("ffwd\n");
-//			mBus.send(Wait);//acknowledge
-//			/* do something on ffwd button*/  
-//      ++currentTrack;   
+//			ignoreNext=false;
+//			if(wasCD)
+//			{
+//				mbus.sendDiscInfo(1, NUM_TRACKS, 500);
+//				wasCD=false;
+//			}
 //		}
-//		else if(receivedMessage == FastBwd)
-//		{
-//      Serial.write("fbwd\n");
-//			mBus.send(Wait);//acknowledge
-//			/* do something on fbwd button*/        
-//		}
-		else if(receivedMessage>>(4*5)==0x113)//'please change cd'
-		{
-			uint64_t test=(receivedMessage >>(4*4))-(uint64_t)0x1130; 
-			if(test>0)//not the same cd as before
-			{
-				mBus.sendChangingDisc(test, 1, MBus::ChangingStatus::kDone);//'did change'
-				delay(50);
-				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
-				currentCD=test;
-				currentTrack=1;
-				wasCD=true;
-				
-				if(timeout<millis())//debounce
-				{
-					interpretDisc(currentCD);
-					timeout=millis()+1000;
-				}
-			}
-			else//same cd, maybe different track
-			{
-				uint8_t lastTrack=currentTrack;
-				//currentTrack=(receivedMessage&((uint64_t)0xF<<(4*2)))>>(4*2);
-				currentTrack+=((receivedMessage&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
-				
-				mBus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd...'
-				delay(50);
-				mBus.sendDiscInfo(1, NUM_TRACKS, 500);
-				delay(50);
-				mBus.sendPlayingTrack(currentTrack,0);
-				if(timeout<millis())//debounce
-				{
-					if(currentTrack!=lastTrack&&currentTrack>1)
-					{
-						fwOrBw(lastTrack, currentTrack);
-					}
-					else if(currentTrack==1)
-					{
-						interpretDisc(currentCD);
-						wasCD=true;
-					}
-					else
-					{
-						/* Error */
-					}
-					timeout=millis()+1000;
-				}
-			}
-			ignoreNext=true;
+   
+		if(received_message == Ping || received_message == Status) {
+      // Acknowledge the ping message.
+			mbus.send(PingOK);
+		} else if (received_message == Shutdown && is_on) {
+      Serial.write("off\n");
+      // Acknowledge.
+			mbus.send(Wait);
+			is_on = false;
+		} else if(received_message == Play) {
+      Serial.write("play\n");
+      is_on = true;
+      play_state = MBus::PlayState::kPlaying;
+      // Clear any error codes.
+      mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);   
+		} else if(received_message == Pause) {
+      Serial.write("pause\n");
+      play_state = MBus::PlayState::kPaused;
+    } else if(received_message == Stop) {
+      Serial.write("stop\n");
+      play_state = MBus::PlayState::kStopped;
+    } else if(received_message == FastFwd || received_message == FastFwdPause) {
+      Serial.write("ffwd\n");
+			mbus.send(Wait);  
+		} else if(received_message == FastBwd || received_message == FastBwdPause) {
+      Serial.write("fbwd\n");
+			mbus.send(Wait);
+		} else if (received_message >> (4*5) == 0x113) {
+      Serial.write("set\n");
+      mbus.interpretSetDiskTrackMessage(received_message);
 		}
+//		else if(received_message>>(4*5)==0x113)//'please change cd'
+//		{
+//			uint64_t test=(received_message >>(4*4))-(uint64_t)0x1130; 
+//			if(test>0)//not the same cd as before
+//			{=
+//				mbus.sendChangingDisc(test, 1, MBus::ChangingStatus::kDone);//'did change'
+//				delay(50);
+//				mbus.sendDiscInfo(1, NUM_TRACKS, 500);
+//				currentCD=test;
+//				currentTrack=1;
+//				wasCD=true;
+//				
+//				if(timeout<millis())//debounce
+//				{
+//					//interpretDisc(currentCD);
+//					timeout=millis()+1000;
+//				}
+//			}
+//			else//same cd, maybe different track
+//			{
+//				uint8_t lastTrack=currentTrack;
+//				//currentTrack=(received_message&((uint64_t)0xF<<(4*2)))>>(4*2);
+//				currentTrack+=((received_message&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
+//				
+//				mbus.sendChangingDisc(currentCD,currentTrack, MBus::ChangingStatus::kDone); //'still at cd...'
+//				delay(50);
+//				mbus.sendDiscInfo(1, NUM_TRACKS, 500);
+//				delay(50);
+//				mbus.sendPlayingTrack(currentTrack,0);
+//				if(timeout<millis())//debounce
+//				{
+//					if(currentTrack!=lastTrack&&currentTrack>1)
+//					{
+//						//fwOrBw(lastTrack, currentTrack);
+//					}
+//					else if(currentTrack==1)
+//					{
+//						//interpretDisc(currentCD);
+//						wasCD=true;
+//					}
+//					else
+//					{
+//						/* Error */
+//					}
+//					timeout=millis()+1000;
+//				}
+//			}
+//			ignoreNext=true;
+//		}
 	}
 }

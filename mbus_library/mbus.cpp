@@ -139,8 +139,10 @@ boolean MBus::receive(uint64_t* message) {
 // CD-changer emulation from here on.
 // -----------------------------------
 
-void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec) {
-  uint64_t play = 0x994000100000001ull;
+void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayState play_state) {
+  uint64_t play = 0x990000100000001ull;
+
+  play |= (uint64_t)play_state << (12 * 4);
 
   play |= (uint64_t)(track_number % 10) << (10 * 4);
   play |= (uint64_t)(track_number / 10) << (11 * 4);
@@ -232,4 +234,20 @@ void MBus::sendChangerErrorCode(ChangerErrorCode code) {
     }
   }
   send(error_message);
+}
+
+void MBus::interpretSetDiskTrackMessage(const uint64_t message) {
+  //Serial.print((uint64_t)(message >> (4*5)));
+}
+
+void MBus::sendInit() {
+  uint64_t init_message = 0x9A00000000004;
+  send(init_message);
+}
+
+void MBus::sendAvailableDiscs() {
+  uint64_t available_disc_message = 0x9D000000005;
+  //uint64_t available_disc_message = 0x9D000D69216;
+  //uint64_t available_disc_message = 0x9D000D38113;
+  send(available_disc_message);
 }
