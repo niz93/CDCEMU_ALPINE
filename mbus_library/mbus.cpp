@@ -74,6 +74,10 @@ boolean MBus::checkParity(uint64_t* message) {
 }
 
 void MBus::send(const uint64_t message) {
+  Serial.print("send: ");
+  printMessage(message);
+  Serial.println();
+
   uint8_t printed = 0;
   uint8_t parity = 0;
   for(int8_t i = 16; i >= 0; i--) {
@@ -151,6 +155,14 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
   play |= (uint64_t)((track_time_sec % 100) / 10) << (5 * 4);
   play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
   play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
+
+  // char message_char[25];
+  // sprintf(message_char, "Play: %08lX", (play >> (4*5)));  
+  // Serial.println(message_char);
+
+  if (play_state == PlayState::kPaused) {
+    send(0x993060100030002ull);
+  }
 
   send(play);
 }
@@ -236,17 +248,56 @@ void MBus::sendChangerErrorCode(ChangerErrorCode code) {
   send(error_message);
 }
 
-void MBus::interpretSetDiskTrackMessage(const uint64_t message) {
-  //Serial.print((uint64_t)(message >> (4*5)));
+MBus::DiskTrackChange MBus::interpretSetDiskTrackMessage(const uint64_t message) {
+  // 7618: 113dttff
+  // 7909: 113dttf
+  //Serial.println((uint64_t)(message >> (4*5)));
+
+  DiskTrackChange out_data;
+
+  if ((message >> (4*5)) == 0x113) {
+    Serial.println("setDiskTrack format.");
+    out_data.disc = (message & ((uint64_t)0xF << (4*4))) >> (4*4);
+    out_data.track = (message & ((uint64_t)0xF << (4*2))) >> (4*2);
+    out_data.track +=((message&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
+  } else if ((message >> (4*4)) == 0x113) {
+    Serial.println("setDiskTrack format 7909.");
+    out_data.disc = (message & ((uint64_t)0xF << (4*3))) >> (4*3);
+    out_data.track = (message & ((uint64_t)0xF << (4*1))) >> (4*1);
+    out_data.track +=((message&((uint64_t)0xF<<(4*2)))>>(4*2))*10;
+  } else {
+    Serial.println("Incorrect setDiskTrack format.");
+  }
+
+  char received_message_char[18];
+  sprintf(received_message_char, "%08lX", (message >> (4*5)));  
+  Serial.println(received_message_char);
+
+  char data_char[18];
+  sprintf(data_char, "Change: d=%d t=%d", out_data.disc, out_data.track);  
+  Serial.println(data_char);
+
+  return out_data;
 }
 
 void MBus::sendInit() {
-  uint64_t init_message = 0x9A00000000004;
+  uint64_t init_message = 0x9A0000000000;
   send(init_message);
+
+  uint64_t init_message3 = 0x9D00000000;
+  send(init_message3);
+
+  uint64_t init_message4 = 0x9E0000000;
+  send(init_message4);
+}
+
+void MBus::sendWait() {
+  uint64_t wait_message = Wait;
+  send(wait_message);  
 }
 
 void MBus::sendAvailableDiscs() {
-  uint64_t available_disc_message = 0x9D000000005;
+  uint64_t available_disc_message =   0x9D00000000;
   //uint64_t available_disc_message = 0x9D000D69216;
   //uint64_t available_disc_message = 0x9D000D38113;
   send(available_disc_message);

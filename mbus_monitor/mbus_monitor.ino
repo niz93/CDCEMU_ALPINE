@@ -1,4 +1,5 @@
 #include<avr/pgmspace.h>
+#include <TimerOne.h>
  
 #define MBUS_IN_PIN 10 // Input port.
 #define MBUS_OUT_PIN 12 // Output port.
@@ -156,7 +157,11 @@ void setup() {
 
   pinMode(MBUS_IN_PIN_INTERRUPT, INPUT);
   pinMode(LED_OUT_PIN, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handle_mbus, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handleMbus, CHANGE);
+
+  receive_data.timer_us = micros();
+  Timer1.initialize(1000);
+  Timer1.attachInterrupt(checkFinished);
 }
 
 void loop() {
@@ -168,11 +173,9 @@ void loop() {
   interrupts();
 }
 
-void handle_mbus() {
-  led_state = !led_state;
-
-  // Move this to a timer routine!
-  if (/*receive_data.state > 0 &&*/ (micros() - receive_data.timer_us) > 4000) {
+void checkFinished() {
+  // We should move this to an interrupt routine one day.
+  if (!receive_data.message_ready && receive_data.state == 4 && (micros() - receive_data.timer_us) > 4000) {
     // Reset the state as the timeout happened.
     receive_data.state = 0;
     receive_data.num_bits = 0;
@@ -183,9 +186,13 @@ void handle_mbus() {
     receive_data.message_ready = true;
     receive_data.num_chars = 0;
   }
+}
+
+void handleMbus() {
+  led_state = !led_state;
 
   if (receive_data.state == 0 && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
-    // A bit has just finished, nothing to do here.
+    // A stray bit we haven't registered has just finished, nothing to do here.
     return;
   }
 
@@ -226,7 +233,7 @@ void handle_mbus() {
       ++receive_data.num_chars;
     }
 
-    receive_data.state = 0;
+    receive_data.state = 4;
     receive_data.timer_us = micros();
   }
 }

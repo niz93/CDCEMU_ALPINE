@@ -34,6 +34,9 @@ limitations under the License.
 #define FastBwdPause 0x1110A
 #define PingOK 0x98
 #define Wait 0x9F00000
+#define Resume 0x11181
+#define ResumeP 0x11182
+#define ChangePrefix 0x113
 
 void printMessage(uint64_t msg);
 
@@ -68,6 +71,12 @@ class MBus {
       kFastReverse = 7
     };
 
+    struct DiskTrackChange {
+      uint8_t disc;
+      uint8_t track;
+      PlayState play_state;
+    };
+
     void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec,
                           PlayState play_state);
     void sendChangingDisc(uint8_t disc_number, uint8_t track_number,
@@ -76,18 +85,20 @@ class MBus {
                       uint16_t total_time_sec);
     void sendChangerErrorCode(ChangerErrorCode code);
 
-    void interpretSetDiskTrackMessage(const uint64_t message);
+    DiskTrackChange interpretSetDiskTrackMessage(const uint64_t message);
 
     // Somewhat mysterious initialization messages.
     void sendInit();
     void sendAvailableDiscs();
+    void sendWait();
+
+    boolean checkParity(uint64_t* message);
 
   private:
     void sendZero();
     void sendOne();
     void writeHexBitwise(uint8_t message);
-    boolean checkParity(uint64_t* message);
-
+    
     uint8_t pin_in_;
     uint8_t pin_out_;
 };
