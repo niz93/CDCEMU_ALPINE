@@ -47,11 +47,19 @@ static const tEntry aCodetable[] PROGMEM = {
   { "1130A314", "next random" },
   { "1130B314", "previous random" },
   { "113dttff", "Select" }, // f0=1:playing, f0=2:paused, f1=4:random
+  { "113dttf", "Select 7909" }, // 113d001 play, 113d002 pause, but also 1130A32?; 1130021 2nd track; 1130031 3rd track; d=0 means current
   { "11400000", "Repeat Off" },
   { "11440000", "Repeat One" },
   { "11480000", "Repeat All" },
+  { "1140000", "Repeat Off 7909"},
+  { "1144000", "Repeat One 7909"},
+  { "1148000", "Repeat All 7909"},
   { "11408000", "Scan" },
+  { "1140800", "Scan 7909" },
+  { "1140100", "Scan Off 7909" },
   { "11402000", "Mix" },
+  { "1140200", "Mix 7909" },
+  { "1140500", "Mix Off 7909" },
   { "9A0000000000", "some powerup?" },
   { "9B0dttfff0f", "last played" }, // f0=0:done, f0=1:busy, f0=8:eject, //f1=4: repeat1, f1=8:repeat all, f2=2:mix
   { "9B8d00fff0f", "Changing Phase 4" },
@@ -89,6 +97,9 @@ void matchAgainstCommandTable(volatile char command[]) {
 
   const int commandlen = strlen(cmd_copy);
   const char first_char = cmd_copy[0];
+
+  bool found_match = false;
+  char description[31];
   
   for (int i = 0; i < sizeof(aCodetable) / sizeof(*aCodetable); ++i) {
     if (commandlen != strlen_P(aCodetable[i].szMask)) {
@@ -114,23 +125,27 @@ void matchAgainstCommandTable(volatile char command[]) {
     }
     if (j == commandlen) {
       // It's a match!
-      char description[31];
       strncpy_P(description, aCodetable[i].szComment, 30);
-
-      if (cmd_copy[0] == '1') {
-        Serial.print("HU: ");
-      } else if (cmd_copy[0] == '9')  {
-        Serial.print("CDC: ");
-      } else {
-        Serial.print("Unknown: ");
-      }
-
-      Serial.print(cmd_copy);
-      Serial.print(" ");
-      Serial.println(description);
+      found_match = true;
     }
   }
 
+  if (cmd_copy[0] == '1') {
+    Serial.print("HU: ");
+  } else if (cmd_copy[0] == '9')  {
+    Serial.print("CDC: ");
+  } else {
+    Serial.print("Unknown: ");
+  }
+  
+  Serial.print(cmd_copy);
+  Serial.print(" ");
+  
+  if (found_match) {
+    Serial.println(description);
+  } else {
+    Serial.println(" UNKNOWN CMD");
+  }
 
   receive_data.message_ready = false;
 }
@@ -203,7 +218,7 @@ void handle_mbus() {
 
     if ((receive_data.num_bits % 4) == 0) {
       char data_string[4];
-      sprintf(data_string,"%x", receive_data.four_bits);
+      sprintf(data_string,"%X", receive_data.four_bits);
       receive_data.message[receive_data.num_chars] = data_string[0];
       
       receive_data.four_bits = 0;
