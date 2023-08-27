@@ -40,6 +40,8 @@ limitations under the License.
 
 void printMessage(uint64_t msg);
 
+// Check this: https://github.com/picohari/atmega128_alpine-mbus-emulator/blob/master/mbus_emul.c#L327
+
 class MBus {
   public:
     MBus(uint8_t in, uint8_t out);

@@ -67,19 +67,19 @@ void handleMbusMessage(volatile uint64_t received_message) {
   if(received_message == Ping || received_message == Status) {
     // Acknowledge the ping message.
     mbus.send(PingOK);
-    Serial.println("Ping");
+    Serial.println("HU: Ping");
   } else if (received_message == Resume) {
     mbus.sendDiscInfo(1, NUM_TRACKS, 500);
-    Serial.println("Resume");
+    Serial.println("HU: Resume");
     play_state = MBus::PlayState::kPlaying;
   } else if (received_message == ResumeP) {
     mbus.sendDiscInfo(1, NUM_TRACKS, 500);
-    Serial.println("Resume pause");
+    Serial.println("HU: Resume pause");
   } else if(received_message == Pause) {
     mbus.sendWait();
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    Serial.println("Pause");
+    Serial.println("HU: Pause");
     play_state = MBus::PlayState::kPaused;
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
@@ -87,17 +87,17 @@ void handleMbusMessage(volatile uint64_t received_message) {
     mbus.sendWait();
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    Serial.println("Stop");
+    Serial.println("HU: Stop");
     play_state = MBus::PlayState::kStopped;
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
   } else if (received_message == Shutdown && is_on) {
     // Acknowledge.
     mbus.send(Wait);
-    Serial.println("Shutdown");
+    Serial.println("HU: Shutdown");
     is_on = false;
   } else if(received_message == Play) {
-    Serial.println("Play");
+    Serial.println("HU: Play");
     is_on = true;
     play_state = MBus::PlayState::kPlaying;
     // Clear any error codes.
@@ -112,8 +112,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     current_disc = change.disc;
     current_track = change.track;
 
-    Serial.println(current_disc);
-    Serial.println(current_track);
+    current_track_time = current_disc * 10000;
     
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
     mbus.sendWait();
