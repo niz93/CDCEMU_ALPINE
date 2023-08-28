@@ -201,37 +201,35 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
 
 void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number,
                             ChangingStatus changing_status) {
-  Serial.println("sendChangingDisc");
-
-  uint64_t changed_disc_message = 0x9B000000001ull;
+uint64_t changed_disc_message = 0x9B000000001ull;
   // The 0x9Bg header means a disc changing operation. The value g=9 it means
   // the changing is done.
 
-  // TODO wrap in a function.
-  // char change_status_str[12];
-  // switch (changing_status) {
-  //   case kInProgress:
-  //     strcpy_P(change_status_str, (const char*)F("in progress"));
-  //     break;
-  //   case kNoMagazine:
-  //     strcpy_P(change_status_str, (const char*)F("no mag"));
-  //     break;
-  //   case kNoDisc:
-  //     strcpy_P(change_status_str, (const char*)F("no disc"));
-  //     break;
-  //   case kNoTrack:
-  //     strcpy_P(change_status_str, (const char*)F("no track"));
-  //     break;
-  //   case kDone:
-  //     strcpy_P(change_status_str, (const char*)F("done"));
-  //     break;
-  //   default:
-  //     strcpy_P(change_status_str, (const char*)F("unknown"));
-  // }
+  //TODO wrap in a function.
+  char change_status_str[12];
+  switch (changing_status) {
+    case kInProgress:
+      strcpy_P(change_status_str, (const char*)F("in progress"));
+      break;
+    case kNoMagazine:
+      strcpy_P(change_status_str, (const char*)F("no mag"));
+      break;
+    case kNoDisc:
+      strcpy_P(change_status_str, (const char*)F("no disc"));
+      break;
+    case kNoTrack:
+      strcpy_P(change_status_str, (const char*)F("no track"));
+      break;
+    case kDone:
+      strcpy_P(change_status_str, (const char*)F("done"));
+      break;
+    default:
+      strcpy_P(change_status_str, (const char*)F("unknown"));
+  }
 
-  // char message_char[40];
-  // sprintf_P(message_char, (const char*)("Disc change: t%d, d%d, %s"), track_number, disc_number, change_status_str);
-  // Serial.println(message_char);
+  char message_char[40];
+  sprintf_P(message_char, (const char*)F("Disc change: t%d, d%d, %s"), track_number, disc_number, change_status_str);
+  Serial.println(message_char);
 
   changed_disc_message |= (uint64_t)disc_number << (7 * 4);
 

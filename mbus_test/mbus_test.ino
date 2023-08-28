@@ -103,7 +103,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     // Clear any error codes.
     //mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
   } else if (received_message >> (4*5) == ChangePrefix || received_message >> (4*4) == ChangePrefix) {
-    Serial.println(F("Change2"));
+    Serial.println(F("Change"));
     mbus.sendWait();
     MBus::DiskTrackChange change = mbus.interpretSetDiskTrackMessage(received_message);
     if (change.disc == 0) change.disc = current_disc;
