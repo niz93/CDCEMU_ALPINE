@@ -49,7 +49,7 @@ boolean is_on = true;
 
 volatile byte led_state = LOW;
 
-MBus::PlayState play_state = MBus::PlayState::kPlaying;
+MBus::PlayState play_state = MBus::PlayState::kStopped;
 
 struct MbusReceiveData {
   byte state;
@@ -67,19 +67,19 @@ void handleMbusMessage(volatile uint64_t received_message) {
   if(received_message == Ping || received_message == Status) {
     // Acknowledge the ping message.
     mbus.send(PingOK);
-    Serial.println("HU: Ping");
+    Serial.println(F("HU: Ping"));
   } else if (received_message == Resume) {
-    mbus.sendDiscInfo(1, NUM_TRACKS, 500);
-    Serial.println("HU: Resume");
+    mbus.sendDiscInfo(current_disc, NUM_TRACKS, 500);
+    Serial.println(F("HU: Resume"));
     play_state = MBus::PlayState::kPlaying;
   } else if (received_message == ResumeP) {
-    mbus.sendDiscInfo(1, NUM_TRACKS, 500);
-    Serial.println("HU: Resume pause");
+    mbus.sendDiscInfo(current_disc, NUM_TRACKS, 500);
+    Serial.println(F("HU: Resume pause"));
   } else if(received_message == Pause) {
     mbus.sendWait();
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    Serial.println("HU: Pause");
+    Serial.println(F("HU: Pause"));
     play_state = MBus::PlayState::kPaused;
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
@@ -87,23 +87,23 @@ void handleMbusMessage(volatile uint64_t received_message) {
     mbus.sendWait();
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    Serial.println("HU: Stop");
+    Serial.println(F("HU: Stop"));
     play_state = MBus::PlayState::kStopped;
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
   } else if (received_message == Shutdown && is_on) {
     // Acknowledge.
     mbus.send(Wait);
-    Serial.println("HU: Shutdown");
+    Serial.println(F("HU: Shutdown"));
     is_on = false;
   } else if(received_message == Play) {
-    Serial.println("HU: Play");
+    Serial.println(F("HU: Play"));
     is_on = true;
     play_state = MBus::PlayState::kPlaying;
     // Clear any error codes.
-    mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
+    //mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
   } else if (received_message >> (4*5) == ChangePrefix || received_message >> (4*4) == ChangePrefix) {
-    Serial.println("Change");
+    Serial.println(F("Change2"));
     mbus.sendWait();
     MBus::DiskTrackChange change = mbus.interpretSetDiskTrackMessage(received_message);
     if (change.disc == 0) change.disc = current_disc;
@@ -114,6 +114,9 @@ void handleMbusMessage(volatile uint64_t received_message) {
 
     current_track_time = current_disc * 10000;
     
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
+    mbus.sendWait();
+    
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
     mbus.sendWait();
     delay(50);
@@ -121,7 +124,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     mbus.sendWait();
     mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
   } else {
-    Serial.print("Other message: ");
+    Serial.print(F("Other message: "));
 
     char received_message_char[18];
     sprintf(received_message_char, "%08lX", received_message);  
@@ -144,7 +147,7 @@ void checkFinished() {
       receive_data.message_ready = true;
     } else {
       // CRC failed, we will not flag the message as ready and reset the struct.
-      Serial.println("CRC Error");
+      Serial.println(F("CRC Error"));
     }
 
     // Reset the state as the timeout happened. 

@@ -161,35 +161,35 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
 
 
   // TODO wrap in a function.
-  char state_str[12];
+  char state_str[11];
   switch (play_state) {
     case kPreparing:
-      strcpy(state_str, "preparing");
+      strcpy_P(state_str, (const char*)F("preparing"));
       break;
     case kStopped:
-      strcpy(state_str, "stopped");
+      strcpy_P(state_str, (const char*)F("stopped"));
       break;
     case kPaused:
-      strcpy(state_str, "paused");
+      strcpy_P(state_str, (const char*)F("paused"));
       break;
     case kPlaying:
-      strcpy(state_str, "playing");
+      strcpy_P(state_str, (const char*)F("playing"));
       break;
     case kSpinup:
-      strcpy(state_str, "spinup");
+      strcpy_P(state_str, (const char*)F("spinup"));
       break;
     case kFastForward:
-      strcpy(state_str, "ffwd");
+      strcpy_P(state_str, (const char*)F("ffwd"));
       break;
     case kFastReverse:
-      strcpy(state_str, "frev");
+      strcpy_P(state_str, (const char*)F("frev"));
       break;
     default:
-      strcpy(state_str, "unknown");
+      strcpy_P(state_str, (const char*)F("unknown"));
   }
 
-  char message_char[35];
-  sprintf(message_char, "CDC: t%d, %d track time sec, %s", track_number, track_time_sec, state_str);
+  char message_char[42];
+  sprintf_P(message_char, (const char*)F("CDC: t%d, %d track time sec, %s"), track_number, track_time_sec, state_str);
   Serial.println(message_char);
 
   // if (play_state == PlayState::kPaused) {
@@ -201,6 +201,8 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
 
 void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number,
                             ChangingStatus changing_status) {
+  Serial.println("sendChangingDisc");
+
   uint64_t changed_disc_message = 0x9B000000001ull;
   // The 0x9Bg header means a disc changing operation. The value g=9 it means
   // the changing is done.
@@ -209,40 +211,45 @@ void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number,
   // char change_status_str[12];
   // switch (changing_status) {
   //   case kInProgress:
-  //     strcpy(change_status_str, "in progress");
+  //     strcpy_P(change_status_str, (const char*)F("in progress"));
   //     break;
   //   case kNoMagazine:
-  //     strcpy(change_status_str, "no mag");
+  //     strcpy_P(change_status_str, (const char*)F("no mag"));
   //     break;
   //   case kNoDisc:
-  //     strcpy(change_status_str, "no disc");
+  //     strcpy_P(change_status_str, (const char*)F("no disc"));
   //     break;
   //   case kNoTrack:
-  //     strcpy(change_status_str, "no track");
+  //     strcpy_P(change_status_str, (const char*)F("no track"));
   //     break;
   //   case kDone:
-  //     strcpy(change_status_str, "done");
+  //     strcpy_P(change_status_str, (const char*)F("done"));
   //     break;
   //   default:
-  //     strcpy(change_status_str, "unknown");
+  //     strcpy_P(change_status_str, (const char*)F("unknown"));
   // }
 
-  // char message_char[35];
-  // sprintf(message_char, "Disc change: t%d, d%d, %s", track_number, disc_number, change_status_str);
+  // char message_char[40];
+  // sprintf_P(message_char, (const char*)("Disc change: t%d, d%d, %s"), track_number, disc_number, change_status_str);
   // Serial.println(message_char);
 
   changed_disc_message |= (uint64_t)disc_number << (7 * 4);
 
-  changed_disc_message |= (uint64_t)(track_number % 10) << (5 * 4);
-  changed_disc_message |= (uint64_t)(track_number / 10) << (6 * 4);
+  if (changing_status == kDone) {
+    // The track number is only communicated for 0x9B9... message.
+    changed_disc_message |= (uint64_t)(track_number % 10) << (5 * 4);
+    changed_disc_message |= (uint64_t)(track_number / 10) << (6 * 4);
+  }
 
   switch (changing_status) {
     case kInProgress: {
-      changed_disc_message |= (uint64_t)4 << (8 * 4);
+      changed_disc_message |= (uint64_t)0xD << (8 * 4);
+      break;
     }
     case kNoMagazine: {
       changed_disc_message |= (uint64_t)4 << (8 * 4);
       changed_disc_message |= (uint64_t)2 << (4 * 4);
+      break;
     }
     case kNoDisc: {
       changed_disc_message |= (uint64_t)4 << (8 * 4);
@@ -260,6 +267,7 @@ void MBus::sendChangingDisc(uint8_t disc_number, uint8_t track_number,
       break;
     }
   }
+
   send(changed_disc_message);
 }
 
@@ -314,25 +322,25 @@ MBus::DiskTrackChange MBus::interpretSetDiskTrackMessage(const uint64_t message)
   DiskTrackChange out_data;
 
   if ((message >> (4*5)) == 0x113) {
-    Serial.println("setDiskTrack format 7618.");
+    Serial.println(F("setDiskTrack format 7618."));
     out_data.disc = (message & ((uint64_t)0xF << (4*4))) >> (4*4);
     out_data.track = (message & ((uint64_t)0xF << (4*2))) >> (4*2);
     out_data.track +=((message&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
   } else if ((message >> (4*4)) == 0x113) {
-    Serial.println("setDiskTrack format 7909.");
+    Serial.println(F("setDiskTrack format 7909."));
     out_data.disc = (message & ((uint64_t)0xF << (4*3))) >> (4*3);
     out_data.track = (message & ((uint64_t)0xF << (4*1))) >> (4*1);
     out_data.track +=((message&((uint64_t)0xF<<(4*2)))>>(4*2))*10;
   } else {
-    Serial.println("Incorrect setDiskTrack format.");
+    Serial.println(F("Incorrect setDiskTrack format."));
   }
 
-  char received_message_char[18];
-  sprintf(received_message_char, "%08lX", (message >> (4*5)));  
-  Serial.println(received_message_char);
+  // char received_message_char[18];
+  // sprintf(received_message_char, "%08lX", (message >> (4*5)));  
+  // Serial.println(received_message_char);
 
-  char data_char[18];
-  sprintf(data_char, "Change: d=%d t=%d", out_data.disc, out_data.track);  
+  char data_char[20];
+  sprintf_P(data_char, (const char*)F("Change: d=%d t=%d"), out_data.disc, out_data.track);  
   Serial.println(data_char);
 
   return out_data;
@@ -355,8 +363,8 @@ void MBus::sendWait() {
 }
 
 void MBus::sendAvailableDiscs() {
-  uint64_t available_disc_message =   0x9D00000000;
+  //uint64_t available_disc_message =   0x9D00000000;
   //uint64_t available_disc_message = 0x9D000D69216;
   //uint64_t available_disc_message = 0x9D000D38113;
-  send(available_disc_message);
+  //send(available_disc_message);
 }
