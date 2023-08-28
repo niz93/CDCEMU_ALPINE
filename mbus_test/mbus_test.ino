@@ -85,11 +85,10 @@ void handleMbusMessage(volatile uint64_t received_message) {
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
   } else if (received_message == Stop) {
     mbus.sendWait();
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     Serial.println(F("HU: Stop"));
     play_state = MBus::PlayState::kStopped;
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+    delay(200);
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
   } else if (received_message == Shutdown && is_on) {
     // Acknowledge.
@@ -147,7 +146,9 @@ void checkFinished() {
       receive_data.message_ready = true;
     } else {
       // CRC failed, we will not flag the message as ready and reset the struct.
-      Serial.println(F("CRC Error"));
+      Serial.print(F("CRC Error: "));
+      printMessage(receive_data.message);
+      Serial.println();
     }
 
     // Reset the state as the timeout happened. 

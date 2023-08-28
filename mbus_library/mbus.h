@@ -32,8 +32,8 @@ limitations under the License.
 #define FastBwd 0x11109
 #define FastFwdPause 0x11106
 #define FastBwdPause 0x1110A
-#define PingOK 0x98
-#define Wait 0x9F00000
+#define PingOK 0x98ull
+#define Wait 0x9F00000ull
 #define Resume 0x11181
 #define ResumeP 0x11182
 #define ChangePrefix 0x113

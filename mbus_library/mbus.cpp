@@ -20,10 +20,6 @@ limitations under the License.
 #include "mbus.h"
 
 void printMessage(uint64_t msg) {
-  // unsigned long long1 = (unsigned long)((msg & 0xFFFF0000) >> 16);
-  // unsigned long long2 = (unsigned long)((msg & 0x0000FFFF));
-  // String hex = String(long1, HEX) + String(long2, HEX) + "\n"; // six octets
-  // Serial.print(hex);
   char message_char[17];
   sprintf(message_char, "%8lx%08lx", ((uint32_t)((msg >> 32) & 0xFFFFFFFF)), ((uint32_t)(msg & 0xFFFFFFFF)));
   Serial.print(message_char);
@@ -147,7 +143,7 @@ boolean MBus::receive(uint64_t* message) {
 // -----------------------------------
 
 void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayState play_state) {
-  uint64_t play = 0x990000100000001ull;
+  uint64_t play = 0x990000100000000ull;
 
   play |= (uint64_t)play_state << (12 * 4);
 
@@ -159,6 +155,17 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
   play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
   play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
 
+ switch (play_state) {
+  case kPaused:
+    play |= (uint64_t)2;
+    break;
+  case kStopped:
+    play |= (uint64_t)9;
+    break;
+  default:
+    play |= (uint64_t)1;
+    break;
+  }
 
   // TODO wrap in a function.
   char state_str[11];
@@ -191,10 +198,6 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
   char message_char[42];
   sprintf_P(message_char, (const char*)F("CDC: t%d, %d track time sec, %s"), track_number, track_time_sec, state_str);
   Serial.println(message_char);
-
-  // if (play_state == PlayState::kPaused) {
-  //   send(0x993060100030002ull);
-  // }
 
   send(play);
 }
