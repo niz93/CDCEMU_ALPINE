@@ -30,7 +30,7 @@ MBus::MBus(uint8_t pin_in, uint8_t pin_out) : pin_in_(pin_in),
   pin_in_ = pin_in;
   pin_out_ = pin_out;
 
-  pinMode(pin_in_, INPUT);
+  pinMode(pin_in_, INPUT_PULLUP);
   pinMode(pin_out_,OUTPUT);
 }
 
@@ -348,18 +348,18 @@ MBus::DiskTrackChange MBus::interpretSetDiskTrackMessage(const uint64_t message)
 }
 
 void MBus::sendInit() {
-  uint64_t init_message = 0x9A0000000000;
-  send(init_message);
+  const uint64_t init_message1 = 0x9A0000000000;
+  send(init_message1);
 
-  uint64_t init_message3 = 0x9D00000000;
+  const uint64_t init_message2 = 0x9D00000000;
+  send(init_message2);
+
+  const uint64_t init_message3 = 0x9E0000000;
   send(init_message3);
-
-  uint64_t init_message4 = 0x9E0000000;
-  send(init_message4);
 }
 
 void MBus::sendWait() {
-  uint64_t wait_message = Wait;
+  const uint64_t wait_message = Wait;
   send(wait_message);  
 }
 

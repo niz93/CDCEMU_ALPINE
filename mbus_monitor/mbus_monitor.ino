@@ -1,12 +1,11 @@
-#include<avr/pgmspace.h>
+#include <avr/pgmspace.h>
 #include <TimerOne.h>
- 
-#define MBUS_IN_PIN 10 // Input port.
-#define MBUS_OUT_PIN 12 // Output port.
 
-#define LED_OUT_PIN 7 // Output port.
-
-#define MBUS_IN_PIN_INTERRUPT 2
+// Adapted to Teensy.
+#define MBUS_IN_PIN 2 // Input port.
+#define MBUS_IN_PIN_INTERRUPT MBUS_IN_PIN
+#define MBUS_OUT_PIN 3 // Output port.
+#define LED_OUT_PIN LED_BUILTIN // Output port.
 
 #define DEFAULT_ZERO_TIME 600
 #define DEFAULT_ONE_TIME  1900
@@ -116,7 +115,7 @@ void matchAgainstCommandTable(volatile char command[]) {
     int j;
     for (j = 0; j < commandlen; ++j) { 
       // All (upper case) hex digits of the mask must match.
-      if (*pszCompare >= '0' &&  *pszCompare <= '9' || *pszCompare >= 'A' &&  *pszCompare <= 'F') {
+      if ((*pszCompare >= '0' &&  *pszCompare <= '9') || (*pszCompare >= 'A' &&  *pszCompare <= 'F')) {
         if (*pszCompare != *pszRun) {
           break; // exit the char loop
         }
@@ -155,7 +154,7 @@ void setup() {
   Serial.begin(115200);
   Serial.write("init\n");
 
-  pinMode(MBUS_IN_PIN_INTERRUPT, INPUT);
+  pinMode(MBUS_IN_PIN_INTERRUPT, INPUT_PULLUP);
   pinMode(LED_OUT_PIN, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handleMbus, CHANGE);
 
@@ -205,23 +204,43 @@ void handleMbus() {
     receive_data.state = 2;
     receive_data.message_ready = false;
 
+    int value = -1;
+
     if (diff_us < MIN_ZERO_TIME) {
       // Pulse too short.
       receive_data.data_state = 1;
+      return;
     } else if (diff_us <= MAX_ZERO_TIME) {
       receive_data.four_bits *= 2;
+      ++receive_data.num_bits;
+      value = 0;
     } else if (diff_us < MIN_ONE_TIME) {
       // Incorrect pulse - inbetween zero and one.
-      receive_data.data_state = 2;
+      receive_data.data_state = 1;
+      return;
     } else if (diff_us <= MAX_ONE_TIME) {
       receive_data.four_bits *= 2;
       receive_data.four_bits += 1;
+      ++receive_data.num_bits;
+      value = 1;
     } else {
-      receive_data.data_state = 3;
       // Pulse too long.
+      receive_data.data_state = 0;
+      return;
     }
 
-    ++receive_data.num_bits;
+    if (false) {
+      Serial.print("Diff us: ");
+      Serial.print(diff_us);
+      Serial.print(" , num bits: ");
+      Serial.print(receive_data.num_bits);
+      if (value > -1) {
+        Serial.print(", bit: ");
+        Serial.println(value);
+      } else {
+        Serial.println();
+      }
+    }
 
     if ((receive_data.num_bits % 4) == 0) {
       char data_string[4];

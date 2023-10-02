@@ -16,12 +16,11 @@
 #include <mbus.h>
 #include <TimerOne.h>
 
-// Pick input and output PINs. On Atmega8, it's gonna be PB2 and PB4.
-#define MBUS_IN_PIN 10 // Input port.
-#define MBUS_OUT_PIN 12 // Output port.
-#define MBUS_IN_PIN_INTERRUPT 2
-
-#define LED_OUT_PIN 7 // Output port.
+// Adapted to Teensy.
+#define MBUS_IN_PIN 2 // Input port.
+#define MBUS_IN_PIN_INTERRUPT MBUS_IN_PIN
+#define MBUS_OUT_PIN 3 // Output port.
+#define LED_OUT_PIN LED_BUILTIN // Output port.
 
 #define UPDATE_CYCLE_MS 500
 
@@ -46,6 +45,8 @@ uint64_t current_track_time = 0;
 
 uint64_t last_update_time_ms = 0;
 boolean is_on = true;
+
+uint8_t num_stop_pause_messages = 0;
 
 volatile byte led_state = LOW;
 
@@ -76,20 +77,24 @@ void handleMbusMessage(volatile uint64_t received_message) {
     mbus.sendDiscInfo(current_disc, NUM_TRACKS, 500);
     Serial.println(F("HU: Resume pause"));
   } else if(received_message == Pause) {
-    mbus.sendWait();
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
     Serial.println(F("HU: Pause"));
-    play_state = MBus::PlayState::kPaused;
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
+    if (play_state != MBus::PlayState::kPaused) {
+      mbus.sendWait();
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
+      play_state = MBus::PlayState::kPaused;
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
+    }
   } else if (received_message == Stop) {
-    mbus.sendWait();
     Serial.println(F("HU: Stop"));
-    play_state = MBus::PlayState::kStopped;
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
-    delay(200);
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
+    if (play_state != MBus::PlayState::kStopped) {
+      mbus.sendWait();
+      play_state = MBus::PlayState::kStopped;
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+      delay(200);
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+    }
   } else if (received_message == Shutdown && is_on) {
     // Acknowledge.
     mbus.send(Wait);
@@ -126,7 +131,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     Serial.print(F("Other message: "));
 
     char received_message_char[18];
-    sprintf(received_message_char, "%08lX", received_message);  
+    sprintf(received_message_char, "%08llX", received_message);  
     Serial.print(received_message_char);
     Serial.println();
   }
@@ -178,17 +183,20 @@ void handleMbus() {
     if (diff_us < MIN_ZERO_TIME) {
       // Pulse too short.
       receive_data.data_state = 1;
+      return;
     } else if (diff_us <= MAX_ZERO_TIME) {
       receive_data.message *= 2;
     } else if (diff_us < MIN_ONE_TIME) {
       // Incorrect pulse - inbetween zero and one.
       receive_data.data_state = 2;
+      return;
     } else if (diff_us <= MAX_ONE_TIME) {
       receive_data.message *= 2;
       receive_data.message += 1;
     } else {
       receive_data.data_state = 3;
       // Pulse too long.
+      return;
     }
 
     ++receive_data.num_bits;
@@ -216,7 +224,7 @@ void setup() {
   mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
   mbus.sendPlayingTrack(current_track, current_track_time, play_state);
 
-  pinMode(MBUS_IN_PIN_INTERRUPT, INPUT);
+  pinMode(MBUS_IN_PIN_INTERRUPT, INPUT_PULLUP);
   pinMode(LED_OUT_PIN, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handleMbus, CHANGE);
 
@@ -234,10 +242,25 @@ void loop() {
 
   uint64_t current_time_ms = millis();
   if (millis() > last_update_time_ms + UPDATE_CYCLE_MS && is_on) {
-    if (true || play_state == MBus::PlayState::kPlaying) {
+    if (play_state == MBus::PlayState::kPlaying) {
       current_track_time += current_time_ms - last_update_time_ms;
     }
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
+
+    if (!(play_state == MBus::PlayState::kStopped || play_state == MBus::PlayState::kPaused)) {
+      // If we're not in the stop or pause state, reset the counter.
+      num_stop_pause_messages = 0;
+    }
+
+    if (num_stop_pause_messages < 2) {
+      // Only send the stop/pause message twice, then the headunit will just ping us.
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+      
+      if (play_state == MBus::PlayState::kStopped || play_state == MBus::PlayState::kPaused) {
+        // Increment the counter if we're actually in the stop/pause mode.
+        ++num_stop_pause_messages;
+      }
+    }
+
     last_update_time_ms = millis();
   }
   interrupts();

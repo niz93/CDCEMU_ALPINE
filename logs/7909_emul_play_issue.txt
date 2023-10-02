@@ -1,0 +1,229 @@
+22:48:19.329 -> sending:  994010100180001
+22:48:19.836 -> CDC: t1, 18 track time sec, playing
+22:48:20.017 -> sending:  994010100180001
+22:48:20.517 -> CDC: t1, 19 track time sec, playing
+22:48:20.736 -> sending:  994010100190001
+22:48:21.209 -> CDC: t1, 19 track time sec, playing
+22:48:21.424 -> sending:  994010100190001
+22:48:21.921 -> CDC: t1, 20 track time sec, playing
+22:48:22.108 -> sending:  994010100200001
+22:48:22.604 -> CDC: t1, 20 track time sec, playing
+22:48:22.819 -> sending:  994010100200001
+22:48:23.290 -> CDC: t1, 21 track time sec, playing
+22:48:23.504 -> sending:  994010100210001
+22:48:24.002 -> CDC: t1, 21 track time sec, playing
+22:48:24.178 -> sending:  994010100210001
+22:48:24.681 -> CDC: t1, 22 track time sec, playing
+22:48:24.893 -> sending:  994010100220001
+22:48:24.893 -> Other message: 40611181
+22:48:25.362 -> CDC: t1, 22 track time sec, playing
+22:48:25.575 -> sending:  994010100220001
+22:48:26.078 -> CDC: t1, 23 track time sec, playing
+22:48:26.255 -> sending:  994010100230001
+22:48:26.756 -> CDC: t1, 23 track time sec, playing
+22:48:26.969 -> sending:  994010100230001
+22:48:27.466 -> CDC: t1, 24 track time sec, playing
+22:48:27.649 -> sending:  994010100240001
+22:48:28.151 -> CDC: t1, 24 track time sec, playing
+22:48:28.360 -> sending:  994010100240001
+22:48:28.862 -> CDC: t1, 25 track time sec, playing
+22:48:29.046 -> sending:  994010100250001
+22:48:29.544 -> CDC: t1, 25 track time sec, playing
+22:48:29.751 -> sending:  994010100250001
+22:48:30.218 -> CDC: t1, 26 track time sec, playing
+22:48:30.434 -> sending:  994010100260001
+22:48:30.931 -> CDC: t1, 26 track time sec, playing
+22:48:31.111 -> sending:  994010100260001
+22:48:31.184 -> HU: Pause
+22:48:31.291 -> sending:        009f00000
+22:48:31.291 -> CDC: t1, 26 track time sec, preparing
+22:48:31.503 -> sending:  991010100260001
+22:48:31.503 -> CDC: t1, 26 track time sec, preparing
+22:48:31.713 -> sending:  991010100260001
+22:48:31.898 -> CDC: t1, 26 track time sec, paused
+22:48:31.898 -> sending:  993010100260002
+22:48:32.085 -> CDC: t1, 26 track time sec, paused
+22:48:32.085 -> sending:  993010100260002
+22:48:32.152 -> HU: Pause
+22:48:32.505 -> CDC: t1, 26 track time sec, paused
+22:48:32.725 -> sending:  993010100260002
+22:48:33.186 -> CDC: t1, 26 track time sec, paused
+22:48:33.405 -> sending:  993010100260002
+22:48:35.367 -> sending:        000000098
+22:48:35.401 -> HU: Ping
+22:48:37.427 -> sending:        000000098
+22:48:37.462 -> HU: Ping
+22:48:38.273 -> sending:     9c101190080f
+
+
+------ below it incorrectly goes out of pause
+
+22:48:38.424 -> HU: Resume
+22:48:38.496 -> HU: Play
+22:48:38.565 -> HU: Play
+22:48:38.633 -> CDC: t1, 27 track time sec, playing
+22:48:38.850 -> sending:  994010100270001
+22:48:38.920 -> CRC Error:       2221111011
+22:48:38.995 -> CRC Error: 2221111011111011
+22:48:39.065 -> Other message: 01111101
+22:48:39.171 -> HU: Play
+22:48:39.243 -> HU: Play
+22:48:39.314 -> HU: Play
+22:48:39.314 -> CDC: t1, 27 track time sec, playing
+22:48:39.524 -> sending:  994010100270001
+22:48:39.599 -> HU: Play
+22:48:39.670 -> HU: Play
+22:48:39.775 -> HU: Play
+22:48:39.851 -> HU: Play
+22:48:39.927 -> HU: Play
+22:48:40.003 -> HU: Play
+22:48:40.003 -> CDC: t1, 28 track time sec, playing
+22:48:40.231 -> sending:  994010100280001
+22:48:40.303 -> HU: Play
+22:48:40.374 -> HU: Play
+22:48:40.446 -> HU: Play
+22:48:40.546 -> HU: Play
+22:48:40.620 -> HU: Play
+22:48:40.693 -> HU: Play
+22:48:40.693 -> CDC: t1, 28 track time sec, playing
+22:48:40.904 -> sending:  994010100280001
+22:48:40.974 -> CRC Error:        001111011
+22:48:41.079 -> Other message: 01111101
+22:48:41.149 -> HU: Play
+22:48:41.225 -> HU: Play
+22:48:41.301 -> HU: Play
+22:48:41.415 -> HU: Play
+22:48:41.415 -> CDC: t1, 29 track time sec, playing
+22:48:41.623 -> sending:  994010100290001
+22:48:41.692 -> CRC Error:        001111011
+22:48:41.763 -> Other message: 01111101
+22:48:41.834 -> HU: Play
+22:48:41.938 -> HU: Play
+22:48:42.010 -> HU: Play
+22:48:42.078 -> HU: Play
+22:48:42.116 -> CDC: t1, 29 track time sec, playing
+22:48:42.300 -> sending:  994010100290001
+22:48:42.371 -> HU: Play
+22:48:42.783 -> CDC: t1, 30 track time sec, playing
+22:48:43.000 -> sending:  994010100300001
+22:48:43.071 -> sending:     9c101190080f
+22:48:43.220 -> HU: Resume pause
+22:48:43.295 -> CRC Error:        000911024
+22:48:43.401 -> CRC Error:     911024111024
+22:48:43.469 -> Other message: 02411102
+22:48:43.541 -> HU: Pause
+22:48:43.645 -> sending:        009f00000
+22:48:43.645 -> CDC: t1, 30 track time sec, preparing
+22:48:43.855 -> sending:  991010100300001
+22:48:43.855 -> CDC: t1, 30 track time sec, preparing
+22:48:44.034 -> sending:  991010100300001
+22:48:44.251 -> CDC: t1, 30 track time sec, paused
+22:48:44.251 -> sending:  993010100300002
+22:48:44.459 -> CDC: t1, 30 track time sec, paused
+22:48:44.459 -> sending:  993010100300002
+22:48:44.533 -> HU: Pause
+22:48:44.533 -> CDC: t1, 30 track time sec, paused
+22:48:44.746 -> sending:  993010100300002
+22:48:45.207 -> CDC: t1, 30 track time sec, paused
+22:48:45.427 -> sending:  993010100300002
+22:48:47.472 -> sending:        000000098
+22:48:47.511 -> HU: Ping
+22:48:49.524 -> sending:        000000098
+
+
+
+22:50:22.120 -> HU: Ping
+22:50:23.932 -> sending:     9c101190080f
+22:50:24.108 -> HU: Resume
+22:50:24.182 -> HU: Play
+22:50:24.253 -> HU: Play
+22:50:24.359 -> HU: Play
+22:50:24.430 -> HU: Play
+22:50:24.463 -> CDC: t1, 30 track time sec, playing
+22:50:24.638 -> sending:  994010100300001
+22:50:24.742 -> CRC Error:        004111011
+22:50:24.813 -> CRC Error:    4111011111011
+22:50:24.880 -> Other message: 01111101
+22:50:24.986 -> HU: Play
+22:50:25.053 -> HU: Play
+22:50:25.125 -> HU: Play
+22:50:25.159 -> CDC: t1, 31 track time sec, playing
+22:50:25.342 -> sending:  994010100310001
+22:50:25.415 -> HU: Play
+22:50:25.486 -> HU: Play
+22:50:25.589 -> HU: Play
+22:50:25.660 -> HU: Play
+22:50:25.733 -> HU: Play
+22:50:25.844 -> HU: Play
+22:50:25.844 -> CDC: t1, 31 track time sec, playing
+22:50:26.026 -> sending:  994010100310001
+22:50:26.097 -> CRC Error:        001111011
+22:50:26.201 -> Other message: 01111101
+22:50:26.272 -> HU: Play
+22:50:26.348 -> HU: Play
+22:50:26.424 -> HU: Play
+22:50:26.526 -> HU: Play
+22:50:26.526 -> CDC: t1, 32 track time sec, playing
+22:50:26.737 -> sending:  994010100320001
+22:50:26.813 -> CRC Error:        001111011
+22:50:26.887 -> Other message: 01111101
+22:50:26.959 -> HU: Play
+22:50:27.059 -> HU: Play
+22:50:27.129 -> HU: Play
+22:50:27.206 -> HU: Play
+22:50:27.244 -> CDC: t1, 32 track time sec, playing
+22:50:27.430 -> sending:  994010100320001
+22:50:27.485 -> CRC Error:        001111011
+22:50:27.580 -> Other message: 01111101
+22:50:27.652 -> HU: Play
+22:50:27.759 -> HU: Play
+22:50:27.828 -> HU: Play
+22:50:27.901 -> HU: Play
+22:50:27.939 -> CDC: t1, 33 track time sec, playing
+22:50:28.118 -> sending:  994010100330001
+22:50:28.188 -> HU: Play
+22:50:28.629 -> CDC: t1, 33 track time sec, playing
+22:50:28.810 -> sending:  994010100330001
+22:50:28.885 -> sending:     9c101190080f
+22:50:29.063 -> HU: Resume pause
+22:50:29.112 -> HU: Pause
+22:50:29.246 -> sending:        009f00000
+22:50:29.246 -> CDC: t1, 33 track time sec, preparing
+22:50:29.434 -> sending:  991010100330001
+22:50:29.434 -> CDC: t1, 33 track time sec, preparing
+22:50:29.618 -> sending:  991010100330001
+22:50:29.839 -> CDC: t1, 33 track time sec, paused
+22:50:29.839 -> sending:  993010100330002
+22:50:30.023 -> CDC: t1, 33 track time sec, paused
+22:50:30.023 -> sending:  993010100330002
+22:50:30.095 -> HU: Pause
+22:50:30.356 -> CDC: t1, 33 track time sec, paused
+22:50:30.534 -> sending:  993010100330002
+22:50:31.042 -> CDC: t1, 33 track time sec, paused
+22:50:31.254 -> sending:  993010100330002
+22:50:32.251 -> sending:     9c101190080f
+22:50:32.392 -> HU: Resume
+22:50:32.392 -> CDC: t1, 34 track time sec, playing
+22:50:32.615 -> sending:  994010100340001
+22:50:32.660 -> CRC Error:        000911011
+22:50:33.084 -> CDC: t1, 34 track time sec, playing
+22:50:33.296 -> sending:  994010100340001
+22:50:33.798 -> CDC: t1, 35 track time sec, playing
+22:50:33.971 -> sending:  994010100350001
+22:50:34.468 -> CDC: t1, 35 track time sec, playing
+22:50:34.686 -> sending:  994010100350001
+22:50:35.187 -> CDC: t1, 36 track time sec, playing
+22:50:35.368 -> sending:  994010100360001
+22:50:35.876 -> CDC: t1, 36 track time sec, playing
+22:50:36.068 -> sending:  994010100360001
+22:50:36.561 -> CDC: t1, 37 track time sec, playing
+22:50:36.746 -> sending:  994010100370001
+22:50:37.250 -> CDC: t1, 37 track time sec, playing
+22:50:37.432 -> sending:  994010100370001
+22:50:37.947 -> CDC: t1, 38 track time sec, playing
+22:50:38.162 -> sending:  994010100380001
+22:50:38.628 -> CDC: t1, 38 track time sec, playing
+22:50:38.843 -> sending:  994010100380001
+22:50:39.344 -> CDC: t1, 39 track time sec, playing
+22:50:39.533 -> sending:  994010100390001
+
