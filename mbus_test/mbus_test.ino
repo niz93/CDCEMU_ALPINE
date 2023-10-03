@@ -57,6 +57,7 @@ struct MbusReceiveData {
   byte data_state;
   uint8_t num_bits;
   unsigned long timer_us;
+  unsigned long last_interrupt_timer_us;
 
   uint8_t num_chars;
   volatile bool message_ready;
@@ -65,6 +66,8 @@ struct MbusReceiveData {
 volatile MbusReceiveData receive_data = {0, 0, 0, 0, 0, 0, false};
 
 void handleMbusMessage(volatile uint64_t received_message) {
+  Serial.send_now();
+  
   if(received_message == Ping || received_message == Status) {
     // Acknowledge the ping message.
     mbus.send(PingOK);
@@ -92,7 +95,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
       mbus.sendWait();
       play_state = MBus::PlayState::kStopped;
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
-      delay(200);
+      //delay(200);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     }
   } else if (received_message == Shutdown && is_on) {
@@ -123,7 +126,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
     mbus.sendWait();
-    delay(50);
+    //delay(50);
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
     mbus.sendWait();
     mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
@@ -138,33 +141,46 @@ void handleMbusMessage(volatile uint64_t received_message) {
 
   receive_data.message_ready = false;
   receive_data.message = 0;
+
+  Serial.send_now();
 }
 
 void checkFinished() {
   // We should move this to an interrupt routine one day.
-  if (!receive_data.message_ready && receive_data.state == 4 && (micros() - receive_data.timer_us) > 4000) {
-    const bool parity_ok = mbus.checkParity((uint64_t*)&receive_data.message);
-
-    if (parity_ok) {
-       // Cut the 4 bits parity and flag the message as ready.
-      receive_data.message = receive_data.message >> 4;
-      receive_data.message_ready = true;
-    } else {
-      // CRC failed, we will not flag the message as ready and reset the struct.
-      Serial.print(F("CRC Error: "));
-      printMessage(receive_data.message);
-      Serial.println();
+  if (!receive_data.message_ready && (micros() - receive_data.timer_us) > 3200) {
+    if (receive_data.state == 4) {
+      const bool parity_ok = mbus.checkParity((uint64_t*)&receive_data.message);
+  
+      if (parity_ok) {
+        // Cut the 4 bits parity and flag the message as ready.
+        receive_data.message = receive_data.message >> 4;
+        receive_data.message_ready = true;
+      } else {
+        // CRC failed, we will not flag the message as ready and reset the struct.
+        Serial.print(F("CRC Error: "));
+        printMessage(receive_data.message);
+        receive_data.message = 0;
+        Serial.println();
+      }
+  
+      // Reset the state as the timeout happened. 
+      receive_data.state = 0;
+      receive_data.num_bits = 0;
+      receive_data.num_chars = 0;
+    } else if ((micros() - receive_data.last_interrupt_timer_us) > 3200) {
+      // Reset the state as the timeout happened since the last interrupt trigger.
+      receive_data.state = 0;
+      receive_data.num_bits = 0;
+      receive_data.num_chars = 0;
+      receive_data.message_ready = false;
+      receive_data.message = 0;
     }
-
-    // Reset the state as the timeout happened. 
-    receive_data.state = 0;
-    receive_data.num_bits = 0;
-    receive_data.num_chars = 0;
   }
 }
 
-void handleMbus() {
+void handleMbusInterrupt() {
   led_state = !led_state;
+  receive_data.last_interrupt_timer_us = micros();
 
   if (receive_data.state == 0 && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
     // A stray bit we haven't registered has just finished, nothing to do here.
@@ -224,9 +240,10 @@ void setup() {
   mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
   mbus.sendPlayingTrack(current_track, current_track_time, play_state);
 
+  // The pullup on the interrupt pin is fundamental to avoid ringing.
   pinMode(MBUS_IN_PIN_INTERRUPT, INPUT_PULLUP);
   pinMode(LED_OUT_PIN, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handleMbus, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(MBUS_IN_PIN_INTERRUPT), handleMbusInterrupt, CHANGE);
 
   receive_data.timer_us = micros();
   Timer1.initialize(1000);
