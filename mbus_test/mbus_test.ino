@@ -13,6 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+
+// TODOs
+// 1) Repeat/repeat all/mix/scan
+// 2) Disc change doesn't work (on 7618R)
+// 3) Still sometimes screw-ups with CRC error
+
+
 #include <mbus.h>
 #include <TimerOne.h>
 
@@ -112,6 +120,10 @@ void handleMbusMessage(volatile uint64_t received_message) {
   } else if (received_message >> (4*5) == ChangePrefix || received_message >> (4*4) == ChangePrefix) {
     Serial.println(F("Change"));
     mbus.sendWait();
+    delayMicroseconds(3000);
+    mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
+    delayMicroseconds(3000);
+    
     MBus::DiskTrackChange change = mbus.interpretSetDiskTrackMessage(received_message);
     if (change.disc == 0) change.disc = current_disc;
     if (change.track == 0) change.track = current_track;
@@ -122,14 +134,26 @@ void handleMbusMessage(volatile uint64_t received_message) {
     current_track_time = current_disc * 10000;
     
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
-    mbus.sendWait();
+
+    // Experimental delays below to make 7618 accept the disc changes properly.
+    if (change.disc != 0) {
+      mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
+      delayMicroseconds(3000);
+      mbus.sendWait();
+    }
     
-    mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
-    mbus.sendWait();
-    //delay(50);
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
     mbus.sendWait();
-    mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
+
+    if (change.disc != 0) {
+      mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
+      delayMicroseconds(3000);
+      mbus.sendWait();
+    }
+    
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kSpinup); 
+    delayMicroseconds(3000);
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPlaying); 
   } else {
     Serial.print(F("Other message: "));
 
