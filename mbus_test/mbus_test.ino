@@ -16,9 +16,11 @@
 
 
 // TODOs
-// 1) Repeat/repeat all/mix/scan
-// 2) Disc change doesn't work (on 7618R)
-// 3) Still sometimes screw-ups with CRC error
+// 1) [ ] Repeat/repeat all/mix/scan
+// 2) [x] Disc change doesn't work (on 7618R)
+// 3) [ ] Still sometimes screw-ups with CRC error
+// 4) [ ] Test with 7909
+// 5) [ ] Why is there so much delay when changing track/disc?
 
 
 #include <mbus.h>
@@ -179,6 +181,7 @@ void checkFinished() {
         // Cut the 4 bits parity and flag the message as ready.
         receive_data.message = receive_data.message >> 4;
         receive_data.message_ready = true;
+        Serial.println("parity ok");
       } else {
         // CRC failed, we will not flag the message as ready and reset the struct.
         Serial.print(F("CRC Error: "));
@@ -278,6 +281,7 @@ void loop() {
   digitalWrite(LED_OUT_PIN, led_state);
   noInterrupts();
   if (receive_data.message_ready) {
+    Serial.println("msg rdy");
     handleMbusMessage(receive_data.message);
   }
 
