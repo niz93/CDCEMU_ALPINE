@@ -1,15 +1,15 @@
 ## Alpine M-Bus library for Arduino
 
-This is a modified and updated library forked from:
+This is a heavily modified library forked from:
 https://github.com/Olstyle/MBus
 
 The changes include:
 * added several new protocol messages, including more detailed changing messages and error messages
-* some minor optimizations
+* introduced interrupts to handle receiving of messages
+* introduced messages specific to Alpine 7909 and potentially other early Alpine headunits
 * reformatted the code to fit the Google c++ styleguide I'm more used to
-* (soon) updated the example file to fit my
 
-Overall, the library fits on an Atmega8 with a MiniCore package (https://github.com/MCUdude/MiniCore) and was tested with an Alpine 7618R headunit.
+Since commits in October 2023, the library has been developed and tested on Teensy 4.0/4.1.
 
 ### Other M-Bus references
 * https://github.com/4nykey/rockbox/blob/master/apps/plugins/alpine_cdc.c
@@ -32,7 +32,7 @@ I also used this site for reference on the bus itself.
 ### License
 
 Copyright 2012 Oliver Mueller
-Copyright 2020 Marcin Dymczyk
+Copyright 2020-2023 Marcin Dymczyk
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
