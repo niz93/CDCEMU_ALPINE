@@ -18,9 +18,10 @@
 // TODOs
 // 1) [ ] Repeat/repeat all/mix/scan
 // 2) [x] Disc change doesn't work (on 7618R)
-// 3) [ ] Still sometimes screw-ups with CRC error
+// 3) [x] Still sometimes screw-ups with CRC error
 // 4) [ ] Test with 7909
-// 5) [ ] Why is there so much delay when changing track/disc?
+// 5) [x] Why is there so much delay when changing track/disc?
+// 6) [ ] Why stray bits registered all the time?
 
 
 #include <mbus.h>
@@ -46,6 +47,16 @@
 #define MIN_ONE_TIME (DEFAULT_ONE_TIME - DEFAULT_TOLERANCE)
 #define MAX_ONE_TIME (DEFAULT_ONE_TIME + DEFAULT_TOLERANCE)
 
+enum MbusDataState {
+  kNoMessage,
+  kBitStart,
+  kCorrectBitEnd,
+  kEarlyBitEnd,
+  kLateBitEnd,
+  kCharEnd,
+  kUnknown
+};
+
 // Construct an MBus objects this example will work with.
 MBus mbus(MBUS_IN_PIN, MBUS_OUT_PIN);
 
@@ -63,21 +74,20 @@ volatile byte led_state = LOW;
 MBus::PlayState play_state = MBus::PlayState::kStopped;
 
 struct MbusReceiveData {
-  byte state;
-  byte data_state;
-  uint8_t num_bits;
+  MbusDataState state = MbusDataState::kNoMessage;
+  volatile bool message_ready;
+
+  uint8_t num_bits_of_current_char;
+  uint8_t num_chars;
+    
   unsigned long timer_us;
   unsigned long last_interrupt_timer_us;
 
-  uint8_t num_chars;
-  volatile bool message_ready;
   volatile uint64_t message;
 };
-volatile MbusReceiveData receive_data = {0, 0, 0, 0, 0, 0, false};
+volatile MbusReceiveData receive_data = {MbusDataState::kNoMessage, false, 0, 0, 0, 0, 0};
 
 void handleMbusMessage(volatile uint64_t received_message) {
-  Serial.send_now();
-  
   if(received_message == Ping || received_message == Status) {
     // Acknowledge the ping message.
     mbus.send(PingOK);
@@ -165,6 +175,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     Serial.println();
   }
 
+  // Fully reset the state.
   receive_data.message_ready = false;
   receive_data.message = 0;
 
@@ -173,8 +184,8 @@ void handleMbusMessage(volatile uint64_t received_message) {
 
 void checkFinished() {
   // We should move this to an interrupt routine one day.
-  if (!receive_data.message_ready && (micros() - receive_data.timer_us) > 3200) {
-    if (receive_data.state == 4) {
+  if (!receive_data.message_ready && (micros() - receive_data.last_interrupt_timer_us) > 3000) {
+    if (receive_data.state == MbusDataState::kCharEnd) {
       const bool parity_ok = mbus.checkParity((uint64_t*)&receive_data.message);
   
       if (parity_ok) {
@@ -189,19 +200,16 @@ void checkFinished() {
         receive_data.message = 0;
         Serial.println();
       }
-  
-      // Reset the state as the timeout happened. 
-      receive_data.state = 0;
-      receive_data.num_bits = 0;
-      receive_data.num_chars = 0;
-    } else if ((micros() - receive_data.last_interrupt_timer_us) > 3200) {
-      // Reset the state as the timeout happened since the last interrupt trigger.
-      receive_data.state = 0;
-      receive_data.num_bits = 0;
-      receive_data.num_chars = 0;
-      receive_data.message_ready = false;
+    } else {
+      // Reset the state as the timeout happened since the last interrupt trigger
+      // and the message was not finished.
       receive_data.message = 0;
     }
+
+    // Reset the state.
+    receive_data.state = MbusDataState::kNoMessage;
+    receive_data.num_bits_of_current_char = 0;
+    receive_data.num_chars = 0;
   }
 }
 
@@ -209,48 +217,52 @@ void handleMbusInterrupt() {
   led_state = !led_state;
   receive_data.last_interrupt_timer_us = micros();
 
-  if (receive_data.state == 0 && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
+  if (receive_data.state == MbusDataState::kNoMessage && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
     // A stray bit we haven't registered has just finished, nothing to do here.
+    Serial.println(F("Stray bit"));
     return;
   }
 
   if (digitalRead(MBUS_IN_PIN_INTERRUPT) == LOW) {
     receive_data.timer_us = micros();
-    receive_data.state = 1;
+    receive_data.state = MbusDataState::kBitStart;
   } else {
     // High after low - a bit has just finished.
-    unsigned long diff_us = micros() - receive_data.timer_us;
-    receive_data.state = 2;
+    const unsigned long diff_us = micros() - receive_data.timer_us;
+    receive_data.state = MbusDataState::kCorrectBitEnd;
     receive_data.message_ready = false;
 
     if (diff_us < MIN_ZERO_TIME) {
       // Pulse too short.
-      receive_data.data_state = 1;
+      Serial.println(F("Bit too short"));
+      receive_data.state = MbusDataState::kEarlyBitEnd;
       return;
     } else if (diff_us <= MAX_ZERO_TIME) {
       receive_data.message *= 2;
     } else if (diff_us < MIN_ONE_TIME) {
       // Incorrect pulse - inbetween zero and one.
-      receive_data.data_state = 2;
+      // We will ignore this and wait for the correct bit end.
+      Serial.println(F("Bit in-between."));
+      receive_data.state = MbusDataState::kEarlyBitEnd;
       return;
     } else if (diff_us <= MAX_ONE_TIME) {
       receive_data.message *= 2;
       receive_data.message += 1;
     } else {
-      receive_data.data_state = 3;
-      // Pulse too long.
-      return;
+      receive_data.state = MbusDataState::kLateBitEnd;
+      Serial.println(F("Late bit end: ") + (String)diff_us + " [us]");
+      // Pulse too long. Let's ignore this, assume it's a zero and continue.
+      // The message will get rejected via parity anyways.
+      receive_data.message *= 2;
     }
 
-    ++receive_data.num_bits;
+    ++receive_data.num_bits_of_current_char;
 
-    if ((receive_data.num_bits % 4) == 0) {
-      receive_data.num_bits = 0;
+    if ((receive_data.num_bits_of_current_char % 4) == 0) {
+      receive_data.num_bits_of_current_char = 0;
       ++receive_data.num_chars;
+      receive_data.state = MbusDataState::kCharEnd;
     }
-
-    receive_data.state = 4;
-    receive_data.timer_us = micros();
   }
 }
 
@@ -284,6 +296,7 @@ void loop() {
     Serial.println("msg rdy");
     handleMbusMessage(receive_data.message);
   }
+  interrupts();
 
   uint64_t current_time_ms = millis();
   if (millis() > last_update_time_ms + UPDATE_CYCLE_MS && is_on) {
@@ -298,15 +311,18 @@ void loop() {
 
     if (num_stop_pause_messages < 2) {
       // Only send the stop/pause message twice, then the headunit will just ping us.
+      while (!receive_data.state == MbusDataState::kNoMessage) {
+        ;
+      }
+      noInterrupts();
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+      interrupts();
       
       if (play_state == MBus::PlayState::kStopped || play_state == MBus::PlayState::kPaused) {
         // Increment the counter if we're actually in the stop/pause mode.
         ++num_stop_pause_messages;
       }
     }
-
     last_update_time_ms = millis();
   }
-  interrupts();
 }
