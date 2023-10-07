@@ -192,7 +192,7 @@ void checkFinished() {
         // Cut the 4 bits parity and flag the message as ready.
         receive_data.message = receive_data.message >> 4;
         receive_data.message_ready = true;
-        Serial.println("parity ok");
+        Serial.println("Parity OK, marking message as ready.");
       } else {
         // CRC failed, we will not flag the message as ready and reset the struct.
         Serial.print(F("CRC Error: "));
@@ -219,7 +219,7 @@ void handleMbusInterrupt() {
 
   if (receive_data.state == MbusDataState::kNoMessage && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
     // A stray bit we haven't registered has just finished, nothing to do here.
-    Serial.println(F("Stray bit"));
+    // It's totally fine as it is very likely related to an interrupt triggered when we're sending data.
     return;
   }
 
@@ -293,7 +293,7 @@ void loop() {
   digitalWrite(LED_OUT_PIN, led_state);
   noInterrupts();
   if (receive_data.message_ready) {
-    Serial.println("msg rdy");
+    Serial.println("About to handle the message.");
     handleMbusMessage(receive_data.message);
   }
   interrupts();
@@ -312,6 +312,7 @@ void loop() {
     if (num_stop_pause_messages < 2) {
       // Only send the stop/pause message twice, then the headunit will just ping us.
       while (!receive_data.state == MbusDataState::kNoMessage) {
+        // Wait until no message is being received.
         ;
       }
       noInterrupts();
