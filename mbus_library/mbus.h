@@ -22,17 +22,25 @@ limitations under the License.
 
 #include "Arduino.h"
 
-#define Shutdown 11142
+#define Shutdown 0x11142
 #define Ping 0x18
+#define Status 0x18 // Not really clear what it means.
 #define Play 0x11101
 #define Pause 0x11102
 #define Stop 0x11140
-#define FastFwd 0x11104
-#define FastBwd 0x11108
-#define PingOK 0x98
-#define Wait 0x9F00000
-#define Off 0x11142
-#define Changing 0x9B910100001
+#define FastFwd 0x11105
+#define FastBwd 0x11109
+#define FastFwdPause 0x11106
+#define FastBwdPause 0x1110A
+#define PingOK 0x98ull
+#define Wait 0x9F00000ull
+#define Resume 0x11181
+#define ResumeP 0x11182
+#define ChangePrefix 0x113
+
+void printMessage(uint64_t msg);
+
+// Check this: https://github.com/picohari/atmega128_alpine-mbus-emulator/blob/master/mbus_emul.c#L327
 
 class MBus {
   public:
@@ -55,19 +63,44 @@ class MBus {
       kDone
     };
 
-    void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec);
+    enum PlayState {
+      kPreparing = 1,
+      kStopped = 2,
+      kPaused = 3,
+      kPlaying = 4,
+      kSpinup = 5,
+      kFastForward = 6,
+      kFastReverse = 7
+    };
+
+    struct DiskTrackChange {
+      uint8_t disc;
+      uint8_t track;
+      PlayState play_state;
+    };
+
+    void sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec,
+                          PlayState play_state);
     void sendChangingDisc(uint8_t disc_number, uint8_t track_number,
                           ChangingStatus changing_status);
     void sendDiscInfo(uint8_t disc_number, uint8_t total_tracks,
                       uint16_t total_time_sec);
     void sendChangerErrorCode(ChangerErrorCode code);
 
+    DiskTrackChange interpretSetDiskTrackMessage(const uint64_t message);
+
+    // Somewhat mysterious initialization messages.
+    void sendInit();
+    void sendAvailableDiscs();
+    void sendWait();
+
+    boolean checkParity(uint64_t* message);
+
   private:
     void sendZero();
     void sendOne();
     void writeHexBitwise(uint8_t message);
-    boolean checkParity(uint64_t* message);
-
+    
     uint8_t pin_in_;
     uint8_t pin_out_;
 };

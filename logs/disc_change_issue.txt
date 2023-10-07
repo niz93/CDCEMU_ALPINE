@@ -1,0 +1,88 @@
+OUTDATED
+
+Emulator change with 7618R:
+
+We're on disc 1, track 7
+
+23:43:16.906 -> CDC: t7, 25 track time sec, playing
+23:43:16.906 -> sending:  994070100250001
+23:43:18.025 -> Change
+23:43:18.025 -> sending:        009f00000
+23:43:18.025 -> setDiskTrack format 7618.
+
+Changing to disc 2 track 1
+
+23:43:18.025 -> Change: d=2 t=1
+23:43:18.025 -> CDC: t1, 20 track time sec, preparing
+23:43:18.025 -> sending:  991010100200001
+23:43:18.025 -> sending:        009f00000
+23:43:18.025 -> Disc change: t1, d2, in progress
+23:43:18.025 -> sending:      9bd20000001
+23:43:18.025 -> sending:        009f00000
+23:43:18.025 -> Disc change: t1, d2, done
+23:43:18.025 -> sending:      9b920100001
+23:43:18.025 -> sending:        009f00000
+23:43:18.025 -> sending:     9c201 19 00 80 f
+                             9C201 15 65 51 7
+23:43:18.602 -> CDC: t1, 20 track time sec, playing
+
+
+
+
+23:55:15.199 -> CDC: t1, 63 track time sec, playing
+23:55:15.199 -> sending:  994010101630001
+23:55:16.632 -> Change
+23:55:16.632 -> sending:        009f00000
+23:55:16.632 -> setDiskTrack format 7618.
+23:55:16.632 -> Change: d=2 t=1
+23:55:16.632 -> CDC: t1, 20 track time sec, preparing
+23:55:16.632 -> sending:  991010100200001
+23:55:16.632 -> sending:        009f00000
+23:55:16.632 -> Disc change: t1, d2, in progress
+23:55:16.632 -> sending:      9bd20000001
+23:55:16.632 -> sending:        009f00000
+23:55:16.632 -> Disc change: t1, d2, done
+23:55:16.632 -> sending:      9b920100001
+23:55:16.632 -> sending:        009f00000
+23:55:16.632 -> sending:     9c201190080f
+23:55:16.632 -> sending:        009f00000
+23:55:16.632 -> CDC: t1, 20 track time sec, spinup
+23:55:16.632 -> sending:  995010100200001
+23:55:17.213 -> CDC: t1, 20 track time sec, playing
+23:55:17.213 -> sending:  994010100200001
+
+
+
+Reference disc change with 7618R:
+
+12:16:46.195 -> HU: 11320110 Select
+12:16:46.305 -> CDC: 9F00000 Ack/Wait
+12:16:46.448 -> CDC: 9B910000001 Changing
+12:16:46.658 -> CDC: 991000100000001 Preparing
+12:16:46.873 -> CDC: 991000100000001 Preparing
+12:16:46.980 -> CDC: 9F00000 Ack/Wait
+12:16:49.144 -> CDC: 9BD20010001 Changing Phase 1
+12:16:49.182 -> HU: 18 Ping
+12:16:49.323 -> CDC: 98 Ping OK
+12:16:49.496 -> CDC: 9BD20010001 Changing Phase 1
+12:16:49.607 -> CDC: 9F00000 Ack/Wait
+12:16:49.826 -> CDC: 9BB20010001 Changing Phase 2
+12:16:49.935 -> CDC: 9F00000 Ack/Wait
+12:16:51.453 -> CDC: 9BC20010001 Changing Phase 3
+12:16:51.526 -> CDC: 9F00000 Ack/Wait
+12:16:52.516 -> CDC: 9B820010001 Changing Phase 4
+12:16:52.621 -> CDC: 9F00000 Ack/Wait
+12:16:54.827 -> CDC: 9B920000001 Changing
+12:16:54.865 -> HU: 18 Ping
+12:16:55.484 -> CDC: 98 Ping OK
+12:16:55.589 -> CDC: 9F00000 Ack/Wait
+12:16:55.738 -> CDC: 9C2011565517 Disk Status
+12:16:55.961 -> CDC: 995010100000001 Spinup
+12:16:56.100 -> CDC: 9D00000000 some status?
+12:16:56.208 -> CDC: 9F00000 Ack/Wait
+12:16:57.055 -> CDC: 994010100000001 Playing
+
+
+Broken message:
+00:02:56.391 -> CRC Error:     226113201102
+

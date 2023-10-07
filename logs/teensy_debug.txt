@@ -1,0 +1,204 @@
+Good HU:
+23:17:50.923 -> Diff us: 671 , num bits: 1, bit: 0
+23:17:50.923 -> Diff us: 662 , num bits: 2, bit: 0
+23:17:50.923 -> Diff us: 662 , num bits: 3, bit: 0
+23:17:50.923 -> Diff us: 0 , num bits: 3
+23:17:50.923 -> Diff us: 1880 , num bits: 4, bit: 1
+23:17:50.961 -> Diff us: 1881 , num bits: 1, bit: 1
+23:17:50.961 -> Diff us: 0 , num bits: 1
+23:17:50.961 -> Diff us: 661 , num bits: 2, bit: 0
+23:17:50.961 -> Diff us: 663 , num bits: 3, bit: 0
+23:17:50.961 -> Diff us: 662 , num bits: 4, bit: 0
+23:17:50.961 -> Diff us: 0 , num bits: 0
+23:17:50.961 -> Diff us: 1893 , num bits: 1, bit: 1
+23:17:50.961 -> Diff us: 662 , num bits: 2, bit: 0
+23:17:50.961 -> Diff us: 1881 , num bits: 3, bit: 1
+23:17:50.961 -> Diff us: 1 , num bits: 3
+23:17:50.961 -> HU: 18 Ping
+
+
+Bad HU:
+23:17:53.051 -> Diff us: 669 , num bits: 1, bit: 0
+23:17:53.051 -> Diff us: 661 , num bits: 2, bit: 0
+23:17:53.051 -> Diff us: 662 , num bits: 3, bit: 0
+23:17:53.051 -> Diff us: 1 , num bits: 3
+23:17:53.051 -> Diff us: 1880 , num bits: 4, bit: 1
+23:17:53.051 -> Diff us: 0 , num bits: 0
+23:17:53.089 -> Diff us: 1881 , num bits: 1, bit: 1
+23:17:53.089 -> Diff us: 660 , num bits: 2, bit: 0
+23:17:53.089 -> Diff us: 662 , num bits: 3, bit: 0
+23:17:53.089 -> Diff us: 1 , num bits: 3
+23:17:53.089 -> Diff us: 662 , num bits: 4, bit: 0
+23:17:53.089 -> Diff us: 1879 , num bits: 1, bit: 1
+23:17:53.089 -> Diff us: 675 , num bits: 2, bit: 0
+23:17:53.089 -> Diff us: 0 , num bits: 2
+23:17:53.089 -> Diff us: 2447 , num bits: 2
+23:17:53.089 -> Diff us: 1879 , num bits: 3, bit: 1
+23:17:53.089 -> Diff us: 660 , num bits: 4, bit: 0
+23:17:53.089 -> HU: 108  UNKNOWN CMD
+
+23:17:53.089 -> Diff us: 1843 , num bits: 1, bit: 1
+23:17:53.089 -> Diff us: 670 , num bits: 2, bit: 0
+23:17:53.089 -> Diff us: 670 , num bits: 3, bit: 0
+23:17:53.133 -> Diff us: 1848 , num bits: 4, bit: 1
+23:17:53.133 -> Diff us: 1844 , num bits: 1, bit: 1
+23:17:53.133 -> Diff us: 669 , num bits: 2, bit: 0
+23:17:53.133 -> Diff us: 0 , num bits: 2
+23:17:53.133 -> Diff us: 1 , num bits: 2
+23:17:53.133 -> Diff us: 670 , num bits: 3, bit: 0
+23:17:53.133 -> Diff us: 670 , num bits: 4, bit: 0
+23:17:53.133 -> Diff us: 0 , num bits: 0
+23:17:53.133 -> Diff us: 1845 , num bits: 1, bit: 1
+23:17:53.133 -> Diff us: 1 , num bits: 1
+23:17:53.133 -> Diff us: 668 , num bits: 2, bit: 0
+23:17:53.133 -> CDC: 98 Ping OK
+
+Bad HU:
+23:17:55.179 -> Diff us: 668 , num bits: 1, bit: 0
+23:17:55.179 -> Diff us: 1 , num bits: 1
+23:17:55.179 -> Diff us: 660 , num bits: 2, bit: 0
+23:17:55.179 -> Diff us: 662 , num bits: 3, bit: 0
+23:17:55.179 -> Diff us: 1880 , num bits: 4, bit: 1
+23:17:55.179 -> Diff us: 1883 , num bits: 1, bit: 1
+23:17:55.179 -> Diff us: 0 , num bits: 1
+23:17:55.215 -> Diff us: 662 , num bits: 2, bit: 0
+23:17:55.215 -> Diff us: 662 , num bits: 3, bit: 0
+23:17:55.215 -> Diff us: 0 , num bits: 3
+23:17:55.215 -> Diff us: 662 , num bits: 4, bit: 0
+23:17:55.215 -> Diff us: 0 , num bits: 0
+23:17:55.215 -> Diff us: 1882 , num bits: 1, bit: 1
+23:17:55.215 -> Diff us: 663 , num bits: 2, bit: 0
+23:17:55.215 -> Diff us: 1882 , num bits: 3, bit: 1
+23:17:55.215 -> Diff us: 662 , num bits: 4, bit: 0
+23:17:55.215 -> Diff us: 0 , num bits: 0
+23:17:55.215 -> Unknown: 280A  UNKNOWN CMD
+
+23:36:44.947 -> Diff us: 1847 , num bits: 1, bit: 1
+23:36:44.947 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:44.947 -> Diff us: 670 , num bits: 3, bit: 0
+23:36:44.947 -> Diff us: 1846 , num bits: 4, bit: 1
+23:36:44.947 -> Diff us: 1846 , num bits: 1, bit: 1
+23:36:44.947 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:44.947 -> Diff us: 671 , num bits: 3, bit: 0
+23:36:44.947 -> Diff us: 1 , num bits: 3
+23:36:44.947 -> Diff us: 671 , num bits: 4, bit: 0
+23:36:44.947 -> Diff us: 669 , num bits: 1, bit: 0
+23:36:44.974 -> Diff us: 669 , num bits: 2, bit: 0
+23:36:44.974 -> Diff us: 1844 , num bits: 3, bit: 1
+23:36:44.974 -> Diff us: 670 , num bits: 4, bit: 0
+23:36:44.974 -> CDC: 98 Ping OK
+23:36:47.015 -> Diff us: 669 , num bits: 1, bit: 0
+23:36:47.015 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:47.015 -> Diff us: 662 , num bits: 3, bit: 0
+23:36:47.015 -> Diff us: 1881 , num bits: 4, bit: 1
+23:36:47.078 -> Diff us: 1880 , num bits: 1, bit: 1
+23:36:47.078 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:47.078 -> Diff us: 693 , num bits: 3, bit: 0
+23:36:47.078 -> Diff us: 0 , num bits: 3
+23:36:47.078 -> Diff us: 660 , num bits: 4, bit: 0
+23:36:47.078 -> Diff us: 1880 , num bits: 1, bit: 1
+23:36:47.078 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:47.078 -> Diff us: 1881 , num bits: 3, bit: 1
+23:36:47.078 -> Diff us: 661 , num bits: 4, bit: 0
+23:36:47.078 -> HU: 18 Ping
+23:36:47.078 -> Diff us: 1844 , num bits: 1, bit: 1
+23:36:47.078 -> Diff us: 671 , num bits: 2, bit: 0
+23:36:47.078 -> Diff us: 667 , num bits: 3, bit: 0
+23:36:47.078 -> Diff us: 1843 , num bits: 4, bit: 1
+23:36:47.078 -> Diff us: 1844 , num bits: 1, bit: 1
+23:36:47.078 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:47.078 -> Diff us: 667 , num bits: 3, bit: 0
+23:36:47.078 -> Diff us: 672 , num bits: 4, bit: 0
+23:36:47.078 -> Diff us: 668 , num bits: 1, bit: 0
+23:36:47.078 -> Diff us: 669 , num bits: 2, bit: 0
+23:36:47.095 -> Diff us: 1848 , num bits: 3, bit: 1
+23:36:47.095 -> Diff us: 668 , num bits: 4, bit: 0
+23:36:47.095 -> CDC: 98 Ping OK
+23:36:49.140 -> Diff us: 670 , num bits: 1, bit: 0
+23:36:49.140 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:49.140 -> Diff us: 660 , num bits: 3, bit: 0
+23:36:49.198 -> Diff us: 1881 , num bits: 4, bit: 1
+23:36:49.198 -> Diff us: 1881 , num bits: 1, bit: 1
+23:36:49.198 -> Diff us: 663 , num bits: 2, bit: 0
+23:36:49.198 -> Diff us: 660 , num bits: 3, bit: 0
+23:36:49.198 -> Diff us: 2450 , num bits: 3
+23:36:49.198 -> Diff us: 659 , num bits: 4, bit: 0
+23:36:49.198 -> Diff us: 1879 , num bits: 1, bit: 1
+23:36:49.198 -> Diff us: 1 , num bits: 1
+23:36:49.198 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:49.198 -> Diff us: 1881 , num bits: 3, bit: 1
+23:36:49.198 -> Diff us: 663 , num bits: 4, bit: 0
+23:36:49.198 -> HU: 18 Ping
+23:36:49.198 -> Diff us: 1845 , num bits: 1, bit: 1
+23:36:49.198 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:49.198 -> Diff us: 668 , num bits: 3, bit: 0
+23:36:49.198 -> Diff us: 1845 , num bits: 4, bit: 1
+23:36:49.198 -> Diff us: 0 , num bits: 0
+23:36:49.198 -> Diff us: 1843 , num bits: 1, bit: 1
+23:36:49.198 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:49.198 -> Diff us: 668 , num bits: 3, bit: 0
+23:36:49.198 -> Diff us: 671 , num bits: 4, bit: 0
+23:36:49.223 -> Diff us: 668 , num bits: 1, bit: 0
+23:36:49.223 -> Diff us: 1 , num bits: 1
+23:36:49.223 -> Diff us: 669 , num bits: 2, bit: 0
+23:36:49.223 -> Diff us: 1844 , num bits: 3, bit: 1
+23:36:49.223 -> Diff us: 669 , num bits: 4, bit: 0
+23:36:49.223 -> CDC: 908  UNKNOWN CMD
+23:36:51.280 -> Diff us: 670 , num bits: 1, bit: 0
+23:36:51.280 -> Diff us: 663 , num bits: 2, bit: 0
+23:36:51.280 -> Diff us: 663 , num bits: 3, bit: 0
+23:36:51.280 -> Diff us: 1881 , num bits: 4, bit: 1
+23:36:51.280 -> Diff us: 1881 , num bits: 1, bit: 1
+23:36:51.280 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:51.280 -> Diff us: 0 , num bits: 2
+23:36:51.280 -> Diff us: 662 , num bits: 3, bit: 0
+23:36:51.280 -> Diff us: 674 , num bits: 4, bit: 0
+23:36:51.347 -> Diff us: 1881 , num bits: 1, bit: 1
+23:36:51.347 -> Diff us: 661 , num bits: 2, bit: 0
+23:36:51.347 -> Diff us: 1880 , num bits: 3, bit: 1
+23:36:51.347 -> Diff us: 661 , num bits: 4, bit: 0
+23:36:51.347 -> HU: 18 Ping
+23:36:51.347 -> Diff us: 1844 , num bits: 1, bit: 1
+23:36:51.347 -> Diff us: 670 , num bits: 2, bit: 0
+23:36:51.347 -> Diff us: 0 , num bits: 2
+23:36:51.347 -> Diff us: 668 , num bits: 3, bit: 0
+23:36:51.347 -> Diff us: 1846 , num bits: 4, bit: 1
+23:36:51.347 -> Diff us: 1846 , num bits: 1, bit: 1
+23:36:51.347 -> Diff us: 672 , num bits: 2, bit: 0
+23:36:51.347 -> Diff us: 671 , num bits: 3, bit: 0
+23:36:51.347 -> Diff us: 669 , num bits: 4, bit: 0
+23:36:51.347 -> Diff us: 671 , num bits: 1, bit: 0
+23:36:51.347 -> Diff us: 670 , num bits: 2, bit: 0
+23:36:51.347 -> Diff us: 1844 , num bits: 3, bit: 1
+23:36:51.347 -> Diff us: 670 , num bits: 4, bit: 0
+23:36:51.347 -> CDC: 98 Ping OK
+23:36:53.403 -> Diff us: 669 , num bits: 1, bit: 0
+23:36:53.403 -> Diff us: 662 , num bits: 2, bit: 0
+23:36:53.403 -> Diff us: 661 , num bits: 3, bit: 0
+23:36:53.403 -> Diff us: 1881 , num bits: 4, bit: 1
+23:36:53.403 -> Diff us: 1881 , num bits: 1, bit: 1
+23:36:53.403 -> Diff us: 660 , num bits: 2, bit: 0
+23:36:53.403 -> Diff us: 0 , num bits: 2
+23:36:53.403 -> Diff us: 662 , num bits: 3, bit: 0
+23:36:53.403 -> Diff us: 0 , num bits: 3
+23:36:53.443 -> Diff us: 677 , num bits: 4, bit: 0
+23:36:53.443 -> Diff us: 1881 , num bits: 1, bit: 1
+23:36:53.443 -> Diff us: 660 , num bits: 2, bit: 0
+23:36:53.443 -> Diff us: 0 , num bits: 2
+23:36:53.443 -> Diff us: 0 , num bits: 2
+23:36:53.443 -> Diff us: 662 , num bits: 3, bit: 0
+23:36:53.443 -> HU: 1  UNKNOWN CMD
+23:36:53.443 -> Diff us: 1844 , num bits: 1, bit: 1
+23:36:53.443 -> Diff us: 669 , num bits: 2, bit: 0
+23:36:53.443 -> Diff us: 0 , num bits: 2
+23:36:53.443 -> Diff us: 668 , num bits: 3, bit: 0
+23:36:53.443 -> Diff us: 1846 , num bits: 4, bit: 1
+23:36:53.443 -> Diff us: 1846 , num bits: 1, bit: 1
+23:36:53.443 -> Diff us: 668 , num bits: 2, bit: 0
+23:36:53.474 -> Diff us: 667 , num bits: 3, bit: 0
+23:36:53.474 -> Diff us: 668 , num bits: 4, bit: 0
+23:36:53.474 -> Diff us: 668 , num bits: 1, bit: 0
+23:36:53.474 -> Diff us: 1 , num bits: 1
+23:36:53.474 -> Diff us: 1844 , num bits: 2, bit: 1
+23:36:53.474 -> Diff us: 671 , num bits: 3, bit: 0
+23:36:53.474 -> Unknown: 4  UNKNOWN CMD
