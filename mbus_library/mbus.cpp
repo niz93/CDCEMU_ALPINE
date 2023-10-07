@@ -196,7 +196,9 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
   }
 
   char message_char[42];
-  sprintf_P(message_char, (const char*)F("CDC: t%d, %d track time sec, %s"), track_number, track_time_sec, state_str);
+  const uint16_t track_minutes = track_time_sec / 60;
+  const uint16_t track_seconds = track_time_sec % 60;
+  sprintf_P(message_char, (const char*)F("CDC: track %d, time %02d:%02d, %s"), track_number, track_minutes, track_seconds, state_str);
   Serial.println(message_char);
 
   send(play);

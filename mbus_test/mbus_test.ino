@@ -21,7 +21,7 @@
 // 3) [x] Still sometimes screw-ups with CRC error
 // 4) [ ] Test with 7909
 // 5) [x] Why is there so much delay when changing track/disc?
-// 6) [ ] Why stray bits registered all the time?
+// 6) [x] Why stray bits registered all the time?
 
 
 #include <mbus.h>
