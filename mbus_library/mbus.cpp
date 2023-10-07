@@ -150,10 +150,10 @@ void MBus::sendPlayingTrack(uint8_t track_number, uint16_t track_time_sec, PlayS
   play |= (uint64_t)(track_number % 10) << (10 * 4);
   play |= (uint64_t)(track_number / 10) << (11 * 4);
 
-  play |= (uint64_t)(track_time_sec % 10) << (4 * 4);
-  play |= (uint64_t)((track_time_sec % 100) / 10) << (5 * 4);
-  play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);
-  play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4);
+  play |= (uint64_t)((track_time_sec % 60) % 10) << (4 * 4);
+  play |= (uint64_t)((track_time_sec % 60) / 10) << (5 * 4);
+  play |= (uint64_t)((track_time_sec / 60) % 10) << (6 * 4);         // Minutes
+  play |= (uint64_t)(((track_time_sec / 60) % 100) / 10) << (7 * 4); // Tens of minutes
 
  switch (play_state) {
   case kPaused:

@@ -69,8 +69,6 @@ boolean is_on = true;
 
 uint8_t num_stop_pause_messages = 0;
 
-volatile byte led_state = LOW;
-
 MBus::PlayState play_state = MBus::PlayState::kStopped;
 
 struct MbusReceiveData {
@@ -103,10 +101,12 @@ void handleMbusMessage(volatile uint64_t received_message) {
     Serial.println(F("HU: Pause"));
     if (play_state != MBus::PlayState::kPaused) {
       mbus.sendWait();
-      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);
+      delayMicroseconds(3000);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
       play_state = MBus::PlayState::kPaused;
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
+      delayMicroseconds(3000);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
     }
   } else if (received_message == Stop) {
@@ -115,7 +115,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
       mbus.sendWait();
       play_state = MBus::PlayState::kStopped;
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
-      //delay(200);
+      delayMicroseconds(3000);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     }
   } else if (received_message == Shutdown && is_on) {
@@ -128,7 +128,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     is_on = true;
     play_state = MBus::PlayState::kPlaying;
     // Clear any error codes.
-    //mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal);
+    // mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal); // Not necessary?
   } else if (received_message >> (4*5) == ChangePrefix || received_message >> (4*4) == ChangePrefix) {
     Serial.println(F("Change"));
     mbus.sendWait();
@@ -142,7 +142,6 @@ void handleMbusMessage(volatile uint64_t received_message) {
 
     current_disc = change.disc;
     current_track = change.track;
-
     current_track_time = current_disc * 10000;
     
     mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
@@ -214,7 +213,6 @@ void checkFinished() {
 }
 
 void handleMbusInterrupt() {
-  led_state = !led_state;
   receive_data.last_interrupt_timer_us = micros();
 
   if (receive_data.state == MbusDataState::kNoMessage && digitalRead(MBUS_IN_PIN_INTERRUPT) == HIGH) {
@@ -290,11 +288,12 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(LED_OUT_PIN, led_state); 
   noInterrupts();
   if (receive_data.message_ready) {
     Serial.println("About to handle the message.");
+    digitalWrite(LED_OUT_PIN, HIGH); 
     handleMbusMessage(receive_data.message);
+    digitalWrite(LED_OUT_PIN, LOW);
   }
   interrupts();
 
@@ -316,7 +315,9 @@ void loop() {
         ;
       }
       noInterrupts();
+      digitalWrite(LED_OUT_PIN, HIGH); 
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
+      digitalWrite(LED_OUT_PIN, LOW); 
       interrupts();
       
       if (play_state == MBus::PlayState::kStopped || play_state == MBus::PlayState::kPaused) {
