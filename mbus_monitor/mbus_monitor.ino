@@ -63,7 +63,7 @@ static const tEntry aCodetable[] PROGMEM = {
   { "9A0000000000", "some powerup?" },
   { "9B0dttfff0f", "last played" }, // f0=0:done, f0=1:busy, f0=8:eject, //f1=4: repeat1, f1=8:repeat all, f2=2:mix
   { "9B8d00fff0f", "Changing Phase 4" },
-  { "9B9dttfff0f", "Changing" }, 
+  { "9B9dttfff0f", "Changing Done" }, 
   { "9BAd00f00ff", "No Magazin" },
   { "9BBd00fff0f", "Changing Phase 2" },
   { "9BCd00fff0f", "Changing Phase 3" },

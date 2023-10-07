@@ -79,3 +79,8 @@ Reference disc change with 7618R:
 12:16:56.100 -> CDC: 9D00000000 some status?
 12:16:56.208 -> CDC: 9F00000 Ack/Wait
 12:16:57.055 -> CDC: 994010100000001 Playing
+
+
+Broken message:
+00:02:56.391 -> CRC Error:     226113201102
+

@@ -133,30 +133,38 @@ void handleMbusMessage(volatile uint64_t received_message) {
     Serial.println(F("Change"));
     mbus.sendWait();
     delayMicroseconds(3000);
-    mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
-    delayMicroseconds(3000);
-    
+
+    bool change_disc = false;
+
     MBus::DiskTrackChange change = mbus.interpretSetDiskTrackMessage(received_message);
-    if (change.disc == 0) change.disc = current_disc;
-    if (change.track == 0) change.track = current_track;
+    if (change.disc == 0) {
+      change.disc = current_disc;
+    } else {
+      change_disc = true;
+    }
+    if (change.track == 0) {
+      change.track = current_track;
+    }
 
     current_disc = change.disc;
     current_track = change.track;
     current_track_time = current_disc * 10000;
-    
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
 
     // Experimental delays below to make 7618 accept the disc changes properly.
-    if (change.disc != 0) {
+    if (change_disc) {
+      mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
+      delayMicroseconds(3000);
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
+
       mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
       delayMicroseconds(3000);
       mbus.sendWait();
     }
     
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
-    mbus.sendWait();
+    delayMicroseconds(3000);
 
-    if (change.disc != 0) {
+    if (change_disc) {
       mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
       delayMicroseconds(3000);
       mbus.sendWait();
