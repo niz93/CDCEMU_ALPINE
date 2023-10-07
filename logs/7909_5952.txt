@@ -661,30 +661,3 @@ Changing tracks
 15:45:23.095 -> HU: 11140 Stop
 
 
-Emulator:
-15:48:17.102 -> CDC: track 2, time 00:16, playing
-15:48:17.102 -> sending:  994020100160001
-15:48:19.024 -> Parity OK, marking message as ready.
-15:48:19.024 -> About to handle the message.
-15:48:19.024 -> Change
-15:48:19.024 -> sending:        009f00000
-15:48:19.024 -> Disc change: t2, d1, done
-15:48:19.024 -> sending:      9b910200001
-15:48:19.024 -> setDiskTrack format 7909.
-15:48:19.024 -> Change: d=0 t=3
-15:48:19.024 -> CDC: track 3, time 00:10, preparing
-15:48:19.024 -> sending:  991030100100001
-15:48:19.024 -> Disc change: t3, d1, in progress
-15:48:19.024 -> sending:      9bd10000001
-15:48:19.024 -> sending:        009f00000
-15:48:19.024 -> Disc change: t3, d1, done
-15:48:19.024 -> sending:      9b910300001
-15:48:19.024 -> sending:        009f00000
-15:48:19.024 -> sending:     9c101190080f
-15:48:19.024 -> sending:        009f00000
-15:48:19.024 -> CDC: track 3, time 00:10, spinup
-15:48:19.024 -> sending:  995030100100001
-15:48:19.024 -> CDC: track 3, time 00:10, playing
-15:48:19.024 -> sending:  994030100100001
-
-

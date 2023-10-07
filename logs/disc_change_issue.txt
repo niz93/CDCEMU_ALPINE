@@ -1,3 +1,5 @@
+OUTDATED
+
 Emulator change with 7618R:
 
 We're on disc 1, track 7
