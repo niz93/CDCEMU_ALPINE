@@ -272,10 +272,7 @@ void handleMbusInterrupt() {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Init");
-
+void mbusSetup() {
   mbus.sendInit();
   mbus.sendAvailableDiscs();
 
@@ -295,7 +292,7 @@ void setup() {
   Timer1.attachInterrupt(checkFinished);
 }
 
-void loop() {
+void mbusLoop() {
   noInterrupts();
   if (receive_data.message_ready) {
     Serial.println("About to handle the message.");
@@ -335,4 +332,15 @@ void loop() {
     }
     last_update_time_ms = millis();
   }
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Init");
+
+  mbusSetup();
+}
+
+void loop() {
+  mbusLoop();
 }
