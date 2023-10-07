@@ -19,7 +19,7 @@
 // 1) [ ] Repeat/repeat all/mix/scan
 // 2) [x] Disc change doesn't work (on 7618R)
 // 3) [x] Still sometimes screw-ups with CRC error
-// 4) [ ] Test with 7909
+// 4) [x] Test with 7909
 // 5) [x] Why is there so much delay when changing track/disc?
 // 6) [x] Why stray bits registered all the time?
 
@@ -290,7 +290,7 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(LED_OUT_PIN, led_state);
+  digitalWrite(LED_OUT_PIN, led_state); 
   noInterrupts();
   if (receive_data.message_ready) {
     Serial.println("About to handle the message.");
