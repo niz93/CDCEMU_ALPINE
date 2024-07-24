@@ -1,4 +1,4 @@
-## Alpine M-Bus library for Arduino
+### Original readme of Oliver Mueller
 
 This is a heavily modified library forked from:
 https://github.com/Olstyle/MBus
@@ -10,13 +10,6 @@ The changes include:
 * reformatted the code to fit the Google c++ styleguide I'm more used to
 
 Since commits in October 2023, the library has been developed and tested on Teensy 4.0/4.1.
-
-### Other M-Bus references
-* https://github.com/4nykey/rockbox/blob/master/apps/plugins/alpine_cdc.c
-* http://web.archive.org/web/20100308084922/http://kiora.ath.cx/alpine/
-* https://github.com/picohari/atmega128_alpine-mbus-emulator
-* https://github.com/kjanesch/pseudochanger (Panasonic version)
-* https://www.avrfreaks.net/projects/alpine-m-bus-communication-audio-input-activation
 
 
 ### Original readme of Oliver Mueller
