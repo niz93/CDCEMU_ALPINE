@@ -1,4 +1,4 @@
-### Original readme of Oliver Mueller
+### Original readme of dymczykm
 
 This is a heavily modified library forked from:
 https://github.com/Olstyle/MBus
