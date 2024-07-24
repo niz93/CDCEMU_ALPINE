@@ -37,6 +37,7 @@ limitations under the License.
 #define Resume 0x11181
 #define ResumeP 0x11182
 #define ChangePrefix 0x113
+#define RequestCDInfo 0x19
 
 void printMessage(uint64_t msg);
 

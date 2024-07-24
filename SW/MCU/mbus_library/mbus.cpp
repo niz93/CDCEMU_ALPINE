@@ -324,16 +324,21 @@ MBus::DiskTrackChange MBus::interpretSetDiskTrackMessage(const uint64_t message)
 
   DiskTrackChange out_data;
 
-  if ((message >> (4*5)) == 0x113) {
-    Serial.println(F("setDiskTrack format 7618."));
-    out_data.disc = (message & ((uint64_t)0xF << (4*4))) >> (4*4);
-    out_data.track = (message & ((uint64_t)0xF << (4*2))) >> (4*2);
-    out_data.track +=((message&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
-  } else if ((message >> (4*4)) == 0x113) {
+  if ((message >> (4*4)) == 0x113) {
     Serial.println(F("setDiskTrack format 7909."));
     out_data.disc = (message & ((uint64_t)0xF << (4*3))) >> (4*3);
     out_data.track = (message & ((uint64_t)0xF << (4*1))) >> (4*1);
     out_data.track +=((message&((uint64_t)0xF<<(4*2)))>>(4*2))*10;
+  
+  
+  
+  } else if ((message >> (4*5)) == 0x113) {
+    Serial.println(F("setDiskTrack format 7618."));
+    out_data.disc = (message & ((uint64_t)0xF << (4*4))) >> (4*4);
+    out_data.track = (message & ((uint64_t)0xF << (4*2))) >> (4*2);
+    out_data.track +=((message&((uint64_t)0xF<<(4*3)))>>(4*3))*10;
+  
+  
   } else {
     Serial.println(F("Incorrect setDiskTrack format."));
   }
@@ -366,8 +371,8 @@ void MBus::sendWait() {
 }
 
 void MBus::sendAvailableDiscs() {
-  //uint64_t available_disc_message =   0x9D00000000;
+  uint64_t available_disc_message =   0x9D00000000;
   //uint64_t available_disc_message = 0x9D000D69216;
   //uint64_t available_disc_message = 0x9D000D38113;
-  //send(available_disc_message);
+  send(available_disc_message);
 }

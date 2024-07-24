@@ -27,19 +27,36 @@
 #include <mbus.h>
 #include <TimerOne.h>
 
+long previousMillisButton = 0;  // Время последнего нажатия кнопки
+
+long intervalButton = 65;
+long PowerUpBTDelay = 7000;
+long intervalChangeSource = 10000;
+
+
+#define ChangeSource 4
+#define PlayBT 6      // Пин воспроизведения
+#define PauseBT 7     // Пин паузы
+#define SkipFBT 8     // Пин переключения вперёд
+#define SkipBBT 9     // Пин переключения назад
+#define PowerUpBT 12  // Пин включения BT
+
 // Adapted to Teensy.
-#define MBUS_IN_PIN 2 // Input port.
+#define MBUS_IN_PIN 2  // Input port.
 #define MBUS_IN_PIN_INTERRUPT MBUS_IN_PIN
-#define MBUS_OUT_PIN 3 // Output port.
-#define LED_OUT_PIN LED_BUILTIN // Output port.
+#define MBUS_OUT_PIN 3           // Output port.
+#define LED_OUT_PIN LED_BUILTIN  // Output port.
+
 
 #define UPDATE_CYCLE_MS 500
 
-#define NUM_TRACKS 19
+
+#define CHANGE_SOURCE_NUMBER 3
+#define NUM_TRACKS 99
 #define DISC_TOTAL_TIME 500
 
 #define DEFAULT_ZERO_TIME 600
-#define DEFAULT_ONE_TIME  1900
+#define DEFAULT_ONE_TIME 1900
 #define DEFAULT_TOLERANCE 450
 
 #define MIN_ZERO_TIME (DEFAULT_ZERO_TIME - DEFAULT_TOLERANCE)
@@ -60,8 +77,14 @@ enum MbusDataState {
 // Construct an MBus objects this example will work with.
 MBus mbus(MBUS_IN_PIN, MBUS_OUT_PIN);
 
+bool Play_BT = 0;
+bool Pause_BT = 0;
+byte SkipF_BT = 0;
+byte SkipB_BT = 0;
+
 uint8_t current_disc = 1;
 uint8_t current_track = 1;
+uint8_t past_track = 1;
 uint64_t current_track_time = 0;
 
 uint64_t last_update_time_ms = 0;
@@ -72,44 +95,62 @@ uint8_t num_stop_pause_messages = 0;
 MBus::PlayState play_state = MBus::PlayState::kStopped;
 
 struct MbusReceiveData {
-  MbusDataState state = MbusDataState::kNoMessage;
+  MbusDataState state;
   volatile bool message_ready;
 
   uint8_t num_bits_of_current_char;
   uint8_t num_chars;
-    
+
   unsigned long timer_us;
   unsigned long last_interrupt_timer_us;
 
   volatile uint64_t message;
 };
-volatile MbusReceiveData receive_data = {MbusDataState::kNoMessage, false, 0, 0, 0, 0, 0};
+volatile MbusReceiveData receive_data = { MbusDataState::kNoMessage, false, 0, 0, 0, 0, 0 };
 
 void handleMbusMessage(volatile uint64_t received_message) {
-  if(received_message == Ping || received_message == Status) {
+
+
+
+
+  if (received_message == Ping || received_message == Status) {
     // Acknowledge the ping message.
     mbus.send(PingOK);
     Serial.println(F("HU: Ping"));
-  } else if (received_message == Resume) {
+  }
+
+  else if (received_message == Resume) {
     mbus.sendDiscInfo(current_disc, NUM_TRACKS, 500);
     Serial.println(F("HU: Resume"));
     play_state = MBus::PlayState::kPlaying;
-  } else if (received_message == ResumeP) {
+  }
+
+  else if (received_message == ResumeP) {
     mbus.sendDiscInfo(current_disc, NUM_TRACKS, 500);
     Serial.println(F("HU: Resume pause"));
-  } else if(received_message == Pause) {
+  }
+
+  else if (received_message == RequestCDInfo) {
+    mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
+    Serial.print(F("HU: Send Disc Info"));
+  }
+
+  else if (received_message == Pause) {
     Serial.println(F("HU: Pause"));
     if (play_state != MBus::PlayState::kPaused) {
       mbus.sendWait();
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);
       delayMicroseconds(3000);
-      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);  
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);
       play_state = MBus::PlayState::kPaused;
-      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state); 
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
       delayMicroseconds(3000);
-      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);  
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     }
-  } else if (received_message == Stop) {
+  }
+
+  else if (received_message == Stop) {
+    Pause_BT = 1;
     Serial.println(F("HU: Stop"));
     if (play_state != MBus::PlayState::kStopped) {
       mbus.sendWait();
@@ -118,18 +159,25 @@ void handleMbusMessage(volatile uint64_t received_message) {
       delayMicroseconds(3000);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
     }
-  } else if (received_message == Shutdown && is_on) {
+  }
+
+  else if (received_message == Shutdown && is_on) {
     // Acknowledge.
     mbus.send(Wait);
     Serial.println(F("HU: Shutdown"));
     is_on = false;
-  } else if(received_message == Play) {
+  }
+
+  else if (received_message == Play) {
     Serial.println(F("HU: Play"));
+    Play_BT = 1;
     is_on = true;
     play_state = MBus::PlayState::kPlaying;
     // Clear any error codes.
     // mbus.sendChangerErrorCode(MBus::ChangerErrorCode::kNormal); // Not necessary?
-  } else if (received_message >> (4*5) == ChangePrefix || received_message >> (4*4) == ChangePrefix) {
+  }
+
+  else if (received_message >> (4 * 5) == ChangePrefix || received_message >> (4 * 4) == ChangePrefix) {
     Serial.println(F("Change"));
     mbus.sendWait();
     delayMicroseconds(3000);
@@ -137,6 +185,10 @@ void handleMbusMessage(volatile uint64_t received_message) {
     bool change_disc = false;
 
     MBus::DiskTrackChange change = mbus.interpretSetDiskTrackMessage(received_message);
+
+
+    past_track = current_track;  // Запоминаем прошлый трек
+
     if (change.disc == 0) {
       change.disc = current_disc;
     } else {
@@ -148,19 +200,45 @@ void handleMbusMessage(volatile uint64_t received_message) {
 
     current_disc = change.disc;
     current_track = change.track;
-    current_track_time = current_disc * 10000;
+    //current_track_time = current_disc * 10000;
+
+
+    if ((current_track - past_track >= 1) && (current_track - past_track < 50)) {  // Если следующий трек больше предыдушего
+      SkipF_BT = SkipF_BT + (current_track - past_track);
+    }
+
+    if (current_track - past_track < -50) {  //если переходим от последнего к первому
+      SkipF_BT = SkipF_BT + 1;
+    }
+
+
+    if ((current_track - past_track <= -1) && (current_track - past_track > -50) || (current_track - past_track > 50)) {  // Если следующий трек меньше предыдущего или если переходим от первого к последнему
+      if (current_track_time > 3000) {
+        SkipB_BT = 2;
+      }
+
+      else {
+        SkipB_BT = 1;
+      }
+    }
+
+    if (current_track - past_track == 0) {
+      SkipB_BT = 1;
+    }
+
+    current_track_time = 0;
 
     // Experimental delays below to make 7618 accept the disc changes properly.
     if (change_disc) {
       mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
       delayMicroseconds(3000);
-      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing); 
+      mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPreparing);
 
       mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kInProgress);
       delayMicroseconds(3000);
       mbus.sendWait();
     }
-    
+
     mbus.sendChangingDisc(current_disc, current_track, MBus::ChangingStatus::kDone);
     delayMicroseconds(3000);
 
@@ -169,15 +247,19 @@ void handleMbusMessage(volatile uint64_t received_message) {
       delayMicroseconds(3000);
       mbus.sendWait();
     }
-    
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kSpinup); 
+
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kSpinup);
     delayMicroseconds(3000);
-    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPlaying); 
-  } else {
+    mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), MBus::PlayState::kPlaying);
+  }
+
+
+
+  else {
     Serial.print(F("Other message: "));
 
     char received_message_char[18];
-    sprintf(received_message_char, "%08llX", received_message);  
+    sprintf(received_message_char, "%08llX", received_message);
     Serial.print(received_message_char);
     Serial.println();
   }
@@ -186,7 +268,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
   receive_data.message_ready = false;
   receive_data.message = 0;
 
-  Serial.send_now();
+  //  Serial.send_now();
 }
 
 void checkFinished() {
@@ -194,7 +276,7 @@ void checkFinished() {
   if (!receive_data.message_ready && (micros() - receive_data.last_interrupt_timer_us) > 3000) {
     if (receive_data.state == MbusDataState::kCharEnd) {
       const bool parity_ok = mbus.checkParity((uint64_t*)&receive_data.message);
-  
+
       if (parity_ok) {
         // Cut the 4 bits parity and flag the message as ready.
         receive_data.message = receive_data.message >> 4;
@@ -256,7 +338,7 @@ void handleMbusInterrupt() {
       receive_data.message += 1;
     } else {
       receive_data.state = MbusDataState::kLateBitEnd;
-      Serial.println(F("Late bit end: ") + (String)diff_us + " [us]");
+      Serial.println(("Late bit end: ") + (String)diff_us + " [us]");
       // Pulse too long. Let's ignore this, assume it's a zero and continue.
       // The message will get rejected via parity anyways.
       receive_data.message *= 2;
@@ -277,8 +359,8 @@ void mbusSetup() {
   mbus.sendAvailableDiscs();
 
   // Start playing the disc according to the defaults.
-  mbus.sendChangingDisc(current_disc, current_track, 
-                        MBus::ChangingStatus::kDone); 
+  mbus.sendChangingDisc(current_disc, current_track,
+                        MBus::ChangingStatus::kDone);
   mbus.sendDiscInfo(current_disc, NUM_TRACKS, DISC_TOTAL_TIME);
   mbus.sendPlayingTrack(current_track, current_track_time, play_state);
 
@@ -296,7 +378,7 @@ void mbusLoop() {
   noInterrupts();
   if (receive_data.message_ready) {
     Serial.println("About to handle the message.");
-    digitalWrite(LED_OUT_PIN, HIGH); 
+    digitalWrite(LED_OUT_PIN, HIGH);
     handleMbusMessage(receive_data.message);
     digitalWrite(LED_OUT_PIN, LOW);
   }
@@ -320,11 +402,11 @@ void mbusLoop() {
         ;
       }
       noInterrupts();
-      digitalWrite(LED_OUT_PIN, HIGH); 
+      digitalWrite(LED_OUT_PIN, HIGH);
       mbus.sendPlayingTrack(current_track, (uint16_t)(current_track_time / 1000), play_state);
-      digitalWrite(LED_OUT_PIN, LOW); 
+      digitalWrite(LED_OUT_PIN, LOW);
       interrupts();
-      
+
       if (play_state == MBus::PlayState::kStopped || play_state == MBus::PlayState::kPaused) {
         // Increment the counter if we're actually in the stop/pause mode.
         ++num_stop_pause_messages;
@@ -339,8 +421,73 @@ void setup() {
   Serial.println("Init");
 
   mbusSetup();
+
+  pinMode(ChangeSource, OUTPUT);
+  pinMode(PlayBT, OUTPUT);
+  pinMode(PauseBT, OUTPUT);
+  pinMode(SkipFBT, OUTPUT);
+  pinMode(SkipBBT, OUTPUT);
+  pinMode(PowerUpBT, OUTPUT);
+  digitalWrite(ChangeSource, LOW);
+  digitalWrite(PlayBT, LOW);
+  digitalWrite(PauseBT, LOW);
+  digitalWrite(SkipFBT, LOW);
+  digitalWrite(SkipBBT, LOW);
+  digitalWrite(PowerUpBT, LOW);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
+
   mbusLoop();
+
+  if (current_disc == CHANGE_SOURCE_NUMBER && current_track_time > intervalChangeSource && current_track == CHANGE_SOURCE_NUMBER) {
+    digitalWrite(ChangeSource, HIGH);
+    digitalWrite(PauseBT, HIGH);
+    previousMillisButton = millis();
+    Serial.println("Change Source on CDC");
+    delay(65);
+    digitalWrite(PauseBT, LOW);
+    delay(10000);
+  }
+
+  if (millis() > intervalButton) { digitalWrite(PowerUpBT, HIGH); }  // Задержка включения BT модуля
+
+
+  if (millis() - previousMillisButton > intervalButton) {  // Если время нажатия кнопки вышло, выключаем
+    digitalWrite(PlayBT, LOW);
+    digitalWrite(PauseBT, LOW);
+    digitalWrite(SkipFBT, LOW);
+    digitalWrite(SkipBBT, LOW);
+  }
+
+  if (millis() - previousMillisButton > (intervalButton * 3)) {  // Защита от залипапния кнопки
+
+    if (Play_BT == 1 && millis() > PowerUpBTDelay) {
+      digitalWrite(PlayBT, HIGH);
+      previousMillisButton = millis();
+      Serial.println("Play_BT");
+      Play_BT = 0;
+    }
+
+    if (Pause_BT == 1) {
+      digitalWrite(PauseBT, HIGH);
+      previousMillisButton = millis();
+      Serial.println("Pause_BT");
+      Pause_BT = 0;
+    }
+
+    if (SkipF_BT > 0) {
+      digitalWrite(SkipFBT, HIGH);
+      previousMillisButton = millis();
+      Serial.println("SkipF_BT");
+      SkipF_BT = SkipF_BT - 1;
+    }
+    if (SkipB_BT > 0) {
+      digitalWrite(SkipBBT, HIGH);
+      previousMillisButton = millis();
+      Serial.println("SkipB_BT");
+      SkipB_BT = SkipB_BT - 1;
+    }
+  }
 }
