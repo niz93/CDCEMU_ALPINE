@@ -67,23 +67,6 @@ GenerateClassCluster=0
 DocumentUniqueId=QBZFWIIC
 
 [Document2]
-DocumentPath=DIFFAMP.SchDoc
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=0
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=FRMRGOSY
-
-[Document3]
 DocumentPath=PCB_СDC_emu_ALPINE.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
