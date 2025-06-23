@@ -448,7 +448,7 @@ void loop() {
 
   if (millis() - previousMillisButton > (intervalButton * 3)) {  // Защита от залипапния кнопки
 
-    if (Play_BT == 1) {
+    if (Play_BT == 1 && millis() > 3000) {
       digitalWrite(PlayBT, HIGH);
       previousMillisButton = millis();
       Serial.println("Play_BT");
