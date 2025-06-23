@@ -1,0 +1,12 @@
+# Partition Table extracted from flash
+
+0, 8K, PS, qcc3005CDCEMUALPINE_partition0.xuv
+1, 32K, RO, qcc3005CDCEMUALPINE_partition1.xuv
+2, 1K, RO, qcc3005CDCEMUALPINE_partition2.xuv
+3, 100K, RO, qcc3005CDCEMUALPINE_partition3.xuv
+4, 1K, RO, qcc3005CDCEMUALPINE_partition4.xuv
+5, 300K, RO, qcc3005CDCEMUALPINE_partition5.xuv
+6, 1K, RO, qcc3005CDCEMUALPINE_partition6.xuv
+7, 8K, RO, qcc3005CDCEMUALPINE_partition7.xuv
+8, 1K, RO, qcc3005CDCEMUALPINE_partition8.xuv
+9, 44K, RS, qcc3005CDCEMUALPINE_partition9.xuv
