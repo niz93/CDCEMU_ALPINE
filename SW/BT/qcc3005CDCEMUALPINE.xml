@@ -10219,8 +10219,8 @@
                         displayValue="Power On" />
                     <PatternArrayConfigItem
                         Id="Button Timing"
-                        value="0x0006"
-                        displayValue="RISING" />
+                        value="0x0003"
+                        displayValue="VLONG" />
                 </PatternArrayRow>
                 <PatternArrayRow
                     Id="Row 2">
@@ -12114,8 +12114,8 @@
                             displayValue="0." />
                         <PatternArrayConfigItem
                             Id="Physical Input Signal"
-                            value="0x0008"
-                            displayValue="PIO 8" />
+                            value="0x0012"
+                            displayValue="PIO 18" />
                     </PatternArrayRow>
                     <PatternArrayRow
                         Id="Row 2">
@@ -12125,8 +12125,8 @@
                             displayValue="1." />
                         <PatternArrayConfigItem
                             Id="Physical Input Signal"
-                            value="0x0001"
-                            displayValue="PIO 1" />
+                            value="0x0015"
+                            displayValue="PIO 21" />
                     </PatternArrayRow>
                     <PatternArrayRow
                         Id="Row 3">
@@ -12158,8 +12158,8 @@
                             displayValue="4." />
                         <PatternArrayConfigItem
                             Id="Physical Input Signal"
-                            value="0x0000"
-                            displayValue="PIO 0" />
+                            value="0x0007"
+                            displayValue="PIO 7" />
                     </PatternArrayRow>
                     <PatternArrayRow
                         Id="Row 6">
@@ -12202,8 +12202,8 @@
                             displayValue="8." />
                         <PatternArrayConfigItem
                             Id="Physical Input Signal"
-                            value="0x0007"
-                            displayValue="PIO 7" />
+                            value="0x0011"
+                            displayValue="PIO 17" />
                     </PatternArrayRow>
                     <PatternArrayRow
                         Id="Row 10">
@@ -12462,8 +12462,8 @@
                 Id="Very Long Press [ms]"
                 Desc="The time a button has to be pressed for, in ms, in order to generate a very long timer message."
                 Range="Min=1000,Max=12000"
-                value="0x0FA0"
-                displayValue="4000" />
+                value="0x1388"
+                displayValue="5000" />
             <ConfigItem
                 LocationItem="BlockId=176, Word=4, Bit=0, Size=16"
                 Type="uint"
@@ -12478,8 +12478,8 @@
                 Id="Very Very Long Press [ms]"
                 Desc="The time a button has to be pressed for, in ms, in order to generate a very very long timer message."
                 Range="Min=1000,Max=12000"
-                value="0x1B58"
-                displayValue="7000" />
+                value="0x1F40"
+                displayValue="8000" />
             <ConfigItem
                 LocationItem="BlockId=176, Word=6, Bit=8, Size=8"
                 Type="uint"

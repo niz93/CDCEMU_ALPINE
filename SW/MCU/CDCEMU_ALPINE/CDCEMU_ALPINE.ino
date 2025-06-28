@@ -172,7 +172,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
   else if (received_message >> (4 * 5) == ChangePrefix || received_message >> (4 * 4) == ChangePrefix) {
     Serial.println(F("Change"));
     mbus.sendWait();
-    delayMicroseconds(3000);
+    delayMicroseconds(30);
 
     bool change_disc = false;
 
@@ -260,7 +260,7 @@ void handleMbusMessage(volatile uint64_t received_message) {
     Serial.print(F("Other message: "));
 
     char received_message_char[18];
-    sprintf(received_message_char, "%08llX", received_message);
+    sprintf(received_message_char, "0x%08llx", received_message);
     Serial.print(received_message_char);
     Serial.println();
   }
@@ -357,7 +357,8 @@ void handleMbusInterrupt() {
 
 void mbusSetup() {
   mbus.sendInit();
-  mbus.sendAvailableDiscs();
+  //mbus.sendAvailableDiscs();
+  
 
   // Start playing the disc according to the defaults.
   mbus.sendChangingDisc(current_disc, current_track,
@@ -448,7 +449,7 @@ void loop() {
 
   if (millis() - previousMillisButton > (intervalButton * 3)) {  // Защита от залипапния кнопки
 
-    if (Play_BT == 1 && millis() > 3000) {
+    if (Play_BT == 1 && millis() > 7000) {
       digitalWrite(PlayBT, HIGH);
       previousMillisButton = millis();
       Serial.println("Play_BT");
